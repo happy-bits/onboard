@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>onboard — Story Sequence Diagrams</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="wrap">
+    <h1>Story sequence diagrams</h1>
+    <p class="subtitle">
+      Generated from the Playwright E2E tests — every step below corresponds to an action or
+      assertion in the test file named for that story.
+    </p>
+
+    <div class="tabs">
+      <button class="tab active" data-panel="panel-1">1 · Superadmin creates two leaders</button>
+      <button class="tab" data-panel="panel-2">2 · Leader invites &amp; onboarding progress</button>
+    </div>
+
+    <div class="panel active" id="panel-1">
+      <p class="story-source">Source: <code>tests/superadmin.spec.ts</code></p>
+      <div class="diagram-scroll" id="diagram-1"></div>
+    </div>
+
+    <div class="panel" id="panel-2">
+      <p class="story-source">Source: <code>tests/onboarding.spec.ts</code></p>
+      <div class="diagram-scroll" id="diagram-2"></div>
+    </div>
+
+    <div class="legend">
+      <div class="legend-item"><span class="legend-swatch swatch-call"></span> request / UI action</div>
+      <div class="legend-item"><span class="legend-swatch swatch-return"></span> response / rendered result</div>
+      <div class="legend-item"><span class="legend-swatch swatch-async"></span> async push (SSE)</div>
+      <div class="legend-item"><span class="legend-swatch swatch-note"></span> database dump assertion</div>
+    </div>
+
+    <footer>
+      Standalone page — no external dependencies or network calls. Open directly in any browser.
+    </footer>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

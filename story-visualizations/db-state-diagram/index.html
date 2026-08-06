@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>onboard — DB State Diagram</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="wrap">
+    <h1>Database before / after</h1>
+    <p class="subtitle">
+      Each story's starting seed vs. its final <code>dumpDatabase()</code> assertion, table by table.
+      New rows are green, rows that changed in place are amber.
+    </p>
+
+    <div class="tabs">
+      <button class="tab active" data-panel="panel-1">1 · Superadmin creates two leaders</button>
+      <button class="tab" data-panel="panel-2">2 · Leader invites &amp; onboarding progress</button>
+    </div>
+
+    <div class="panel active" id="panel-1">
+      <p class="story-source">Source: <code>tests/superadmin.spec.ts</code> — seed scenario <code>"superadmin"</code></p>
+      <div id="board-1"></div>
+    </div>
+
+    <div class="panel" id="panel-2">
+      <p class="story-source">Source: <code>tests/onboarding.spec.ts</code> — seed scenario <code>"superadmin+leader"</code></p>
+      <div id="board-2"></div>
+    </div>
+
+    <div class="legend">
+      <div class="legend-item"><span class="legend-swatch new"></span> new row</div>
+      <div class="legend-item"><span class="legend-swatch changed"></span> existing row, field changed</div>
+      <div class="legend-item">no highlight — unchanged between before and after</div>
+    </div>
+
+    <p class="footnotes">
+      Columns are trimmed to what changes across the story: <code>passwordHash</code> is omitted from
+      <code>users</code> (the test verifies it via the <code>hash()</code> helper, not by inspection);
+      <code>createdAt</code>/<code>expiresAt</code> are omitted from <code>invitations</code> (both are the
+      fixed <code>EPOCH</code> / <code>EPOCH_PLUS_24H</code> constants from <code>tests/helpers.ts</code> for
+      every row); <code>sentAt</code> and the full <code>body</code> are omitted from <code>emails</code> for
+      the same reason — the body's content (who invited whom, to which team, with which invite link) is exactly
+      what the story text already describes in prose.
+    </p>
+
+    <footer>
+      Standalone page — no external dependencies or network calls. Open directly in any browser.
+    </footer>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

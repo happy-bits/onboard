@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>onboard — Story Storyboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="wrap">
+    <h1>Storyboard</h1>
+    <p class="subtitle">
+      One panel per screen the user actually sees — a comic-strip walk through each Playwright test,
+      built only from what the test types, clicks and asserts.
+    </p>
+
+    <div class="tabs">
+      <button class="tab active" data-panel="panel-1">1 · Superadmin creates two leaders</button>
+      <button class="tab" data-panel="panel-2">2 · Leader invites &amp; onboarding progress</button>
+    </div>
+
+    <div class="panel active" id="panel-1">
+      <p class="story-source">Source: <code>tests/superadmin.spec.ts</code></p>
+      <div id="board-1"></div>
+    </div>
+
+    <div class="panel" id="panel-2">
+      <p class="story-source">Source: <code>tests/onboarding.spec.ts</code></p>
+      <div id="board-2"></div>
+    </div>
+
+    <div class="legend">
+      <div class="legend-item"><span class="legend-swatch leader"></span> Superadmin / Leader browser</div>
+      <div class="legend-item"><span class="legend-swatch member"></span> Member browser</div>
+      <div class="legend-item">⚡ live update pushed via SSE, no page reload</div>
+      <div class="legend-item"><span class="legend-swatch note"></span> final database dump assertion</div>
+    </div>
+
+    <footer>
+      Standalone page — no external dependencies or network calls. Open directly in any browser.
+    </footer>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
