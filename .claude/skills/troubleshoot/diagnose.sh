@@ -109,7 +109,21 @@ else
 fi
 
 
-# 10. Database reachable
+# 10. Prisma Client generated and up to date
+if [ -n "$ONBOARD_DIR" ] && [ -d "$ONBOARD_DIR/node_modules" ]; then
+ if [ ! -d "$ONBOARD_DIR/node_modules/.prisma/client" ]; then
+   report FAIL "Prisma Client generated" "node_modules/.prisma/client missing (run npx prisma generate)"
+ elif [ -n "$(find "$ONBOARD_DIR/prisma/schema.prisma" -newer "$ONBOARD_DIR/node_modules/.prisma/client" 2>/dev/null)" ]; then
+   report WARN "Prisma Client generated" "schema.prisma is newer than the generated client (run npx prisma generate)"
+ else
+   report OK "Prisma Client generated" "node_modules/.prisma/client is up to date with schema.prisma"
+ fi
+else
+ report WARN "Prisma Client generated" "skipped - node_modules not present"
+fi
+
+
+# 11. Database reachable
 DB_OK=0
 if [ -n "$CID" ]; then
  if docker exec "$CID" pg_isready -U onboard -d onboard >/dev/null 2>&1; then
@@ -123,7 +137,7 @@ else
 fi
 
 
-# 11. Migrations applied
+# 12. Migrations applied
 TABLE_COUNT=""
 if [ "$DB_OK" = "1" ]; then
  TABLE_COUNT=$(docker exec "$CID" psql -U onboard -d onboard -tAc \
@@ -138,7 +152,7 @@ else
 fi
 
 
-# 12. Seed data present
+# 13. Seed data present
 if [ "$DB_OK" = "1" ] && [ "$TABLE_COUNT" = "1" ]; then
  USERS=$(docker exec "$CID" psql -U onboard -d onboard -tAc \
    "select email || ':' || role from \"User\" order by id;" 2>/dev/null)
