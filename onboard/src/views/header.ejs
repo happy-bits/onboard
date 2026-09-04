@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= title %> · Onboard</title>
+  <style>
+    :root { color-scheme: light dark; }
+    * { box-sizing: border-box; }
+    body { margin-inline: auto; padding: 2rem 1rem; max-width: 46rem;
+           font: 16px/1.5 system-ui, -apple-system, sans-serif; }
+    header { display: flex; gap: 1rem; align-items: baseline; flex-wrap: wrap;
+             border-bottom: 1px solid color-mix(in srgb, currentColor 20%, transparent);
+             padding-bottom: .75rem; margin-bottom: 1.5rem; }
+    header h1 { font-size: 1.25rem; margin: 0; }
+    header .who { margin-left: auto; opacity: .75; font-size: .875rem;
+                  display: flex; gap: .6rem; align-items: center; }
+    h2 { font-size: .8rem; text-transform: uppercase; letter-spacing: .05em;
+         opacity: .6; margin-top: 2rem; }
+    form.inline { display: flex; gap: .5rem; flex-wrap: wrap; align-items: end; }
+    label { display: block; font-size: .875rem; }
+    input[type=email], input[type=password], input[type=text] {
+      padding: .5rem; font: inherit; min-width: 15rem; border-radius: 6px;
+      border: 1px solid color-mix(in srgb, currentColor 30%, transparent);
+      background: transparent; color: inherit; }
+    button { padding: .45rem .9rem; font: inherit; border-radius: 6px; cursor: pointer;
+             border: 1px solid color-mix(in srgb, currentColor 35%, transparent);
+             background: color-mix(in srgb, currentColor 8%, transparent); color: inherit; }
+    table { border-collapse: collapse; width: 100%; margin-top: .5rem; }
+    th, td { text-align: left; padding: .5rem .4rem;
+             border-bottom: 1px solid color-mix(in srgb, currentColor 15%, transparent); }
+    th { font-size: .75rem; text-transform: uppercase; letter-spacing: .05em; opacity: .6; }
+    p.error { color: #c0392b; }
+    p.notice { color: #1e8449; }
+    ul.steps, ul.plain { list-style: none; padding: 0; }
+    ul.steps li { padding: .3rem 0; }
+    ul.steps form { display: flex; gap: .6rem; align-items: center; }
+    .muted { opacity: .6; }
+    code { font-size: .85em; word-break: break-all; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Onboard</h1>
+    <% if (user) { %>
+      <span class="who">
+        <span data-testid="current-user"><%= user.email %> (<%= user.role %>)</span>
+        <form method="post" action="/logout"><button type="submit">Log out</button></form>
+      </span>
+    <% } %>
+  </header>
+  <main>

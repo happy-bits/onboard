@@ -1,0 +1,15 @@
+<%- include('header', { title: 'Invitation unavailable', user: null }) %>
+
+<h2>Invitation unavailable</h2>
+
+<p class="error" data-testid="invite-unavailable">
+  <% if (used) { %>
+    This invitation has already been used.
+  <% } else { %>
+    This invitation link is not valid.
+  <% } %>
+</p>
+
+<p><a href="/login" data-testid="go-to-login">Go to login</a></p>
+
+<%- include('footer') %>

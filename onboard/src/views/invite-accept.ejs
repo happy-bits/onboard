@@ -1,0 +1,18 @@
+<%- include('header', { title: 'Accept invitation', user: null }) %>
+
+<h2>Create your account</h2>
+
+<p>You were invited as <strong data-testid="invited-email"><%= invitation.email %></strong>.</p>
+
+<% if (error) { %><p class="error" data-testid="error"><%= error %></p><% } %>
+
+<form method="post" action="/invite/<%= invitation.token %>">
+  <p>
+    <label for="password">Choose a password</label>
+    <input id="password" name="password" type="password" required minlength="8"
+           autocomplete="new-password">
+  </p>
+  <button type="submit" data-testid="create-account">Create account</button>
+</form>
+
+<%- include('footer') %>

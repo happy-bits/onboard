@@ -1,0 +1,23 @@
+name: onboard-r7
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: onboard-r7-pg
+    environment:
+      POSTGRES_USER: onboard
+      POSTGRES_PASSWORD: onboard
+      POSTGRES_DB: onboard
+    ports:
+      - "5473:5432"
+    volumes:
+      - onboard-r7-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U onboard -d onboard"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+volumes:
+  onboard-r7-pgdata:
+    name: onboard-r7-pgdata

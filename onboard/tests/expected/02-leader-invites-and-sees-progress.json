@@ -1,0 +1,76 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "email": "admin@onboard.test",
+      "password_hash": "scrypt$9f6d1b6b96248205f6bc3bb488a408c48934c4813720e596f2f879b358f983a8",
+      "role": "superadmin",
+      "team_id": null,
+      "created_at": "2024-01-01 00:00:00+00"
+    },
+    {
+      "id": 2,
+      "email": "leader-a@onboard.test",
+      "password_hash": "scrypt$a0dc1493647172b9fa35c1f8f1b2e106bc2bfaef79811c8e2ebc5c7a27ee6096",
+      "role": "leader",
+      "team_id": null,
+      "created_at": "2024-01-01 00:00:00+00"
+    },
+    {
+      "id": 3,
+      "email": "invited-one@onboard.test",
+      "password_hash": "scrypt$4e369eb38adb60cd06eedfe08a6cf75d2bf48514fba7c6b59a2253b99970c8ef",
+      "role": "member",
+      "team_id": 1,
+      "created_at": "2024-01-01 00:00:00+00"
+    }
+  ],
+  "teams": [
+    {
+      "id": 1,
+      "name": "leader-a@onboard.test's team",
+      "leader_id": 2,
+      "created_at": "2024-01-01 00:00:00+00"
+    }
+  ],
+  "invitations": [
+    {
+      "id": 1,
+      "email": "invited-one@onboard.test",
+      "token": "d0b6c5f62f3d85923c0ffdf337dbbd8b",
+      "team_id": 1,
+      "status": "accepted",
+      "created_at": "2024-01-01 00:00:00+00",
+      "accepted_at": "2024-01-01 00:00:00+00"
+    },
+    {
+      "id": 2,
+      "email": "invited-two@onboard.test",
+      "token": "e0d5f2a41260abc4b9c4a6405fdd5b47",
+      "team_id": 1,
+      "status": "pending",
+      "created_at": "2024-01-01 00:00:00+00",
+      "accepted_at": null
+    }
+  ],
+  "onboarding_progress": [
+    {
+      "id": 1,
+      "user_id": 3,
+      "step_key": "read_handbook",
+      "completed_at": "2024-01-01 00:00:00+00"
+    },
+    {
+      "id": 2,
+      "user_id": 3,
+      "step_key": "setup_accounts",
+      "completed_at": "2024-01-01 00:00:00+00"
+    },
+    {
+      "id": 3,
+      "user_id": 3,
+      "step_key": "meet_team",
+      "completed_at": "2024-01-01 00:00:00+00"
+    }
+  ]
+}

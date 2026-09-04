@@ -1,0 +1,45 @@
+<%- include('header', { title: 'Leaders' }) %>
+
+<h2>Leaders</h2>
+
+<% if (error) { %><p class="error" data-testid="error"><%= error %></p><% } %>
+
+<% if (leaders.length === 0) { %>
+  <p class="muted" data-testid="no-leaders">No leaders yet.</p>
+<% } else { %>
+  <table data-testid="leaders-table">
+    <thead>
+      <tr><th>Email</th><th>Team</th><th>Members</th><th></th></tr>
+    </thead>
+    <tbody>
+      <% leaders.forEach((leader) => { %>
+        <tr data-testid="leader-row" data-email="<%= leader.email %>">
+          <td data-testid="leader-email"><%= leader.email %></td>
+          <td class="muted"><%= leader.team_name || '—' %></td>
+          <td><%= leader.member_count || 0 %></td>
+          <td>
+            <form method="post" action="/admin/leaders/<%= leader.id %>/delete">
+              <button type="submit" data-testid="remove-leader">Remove</button>
+            </form>
+          </td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+<% } %>
+
+<h2>Create a leader</h2>
+
+<form method="post" action="/admin/leaders" class="inline">
+  <div>
+    <label for="email">Email</label>
+    <input id="email" name="email" type="email" required autocomplete="off">
+  </div>
+  <div>
+    <label for="password">Password</label>
+    <input id="password" name="password" type="password" required autocomplete="new-password">
+  </div>
+  <button type="submit" data-testid="create-leader">Create leader</button>
+</form>
+
+<%- include('footer') %>

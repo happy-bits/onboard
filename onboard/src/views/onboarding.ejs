@@ -1,0 +1,36 @@
+<%- include('header', { title: 'Onboarding' }) %>
+
+<h2>Your onboarding</h2>
+
+<p data-testid="progress"><%= done.size %>/<%= totalSteps %> completed</p>
+
+<ul class="steps">
+  <% steps.forEach((step) => { %>
+    <li>
+      <!--
+        One form per step. The checkbox submits its own form on change, so the
+        page works without any client-side state; the noscript button below is
+        the fallback when scripting is unavailable.
+      -->
+      <form method="post" action="/onboarding/steps/<%= step.key %>">
+        <input type="hidden" name="checked" value="off">
+        <input type="checkbox"
+               id="step-<%= step.key %>"
+               name="checked"
+               value="on"
+               data-testid="step-checkbox"
+               data-step="<%= step.key %>"
+               <%= done.has(step.key) ? 'checked' : '' %>
+               onchange="this.form.submit()">
+        <label for="step-<%= step.key %>"><%= step.label %></label>
+        <noscript><button type="submit">Save</button></noscript>
+      </form>
+    </li>
+  <% }) %>
+</ul>
+
+<% if (done.size === totalSteps) { %>
+  <p class="notice" data-testid="onboarding-complete">Onboarding complete. Nice work!</p>
+<% } %>
+
+<%- include('footer') %>
