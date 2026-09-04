@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Onboard — What We Test and Why</title>
+<style>
+  :root {
+    --bg: #f7f7f5;
+    --panel: #ffffff;
+    --ink: #1c1c1a;
+    --ink-soft: #5c5c56;
+    --line: #e2e2dc;
+    --accent: #2f6f4f;
+    --accent-soft: #eaf3ee;
+    --amber: #8a6212;
+    --amber-soft: #fbf3e0;
+    --radius: 10px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16171a;
+      --panel: #1e2024;
+      --ink: #ecece8;
+      --ink-soft: #a3a39c;
+      --line: #32343a;
+      --accent: #7fc39a;
+      --accent-soft: #223029;
+      --amber: #e0b567;
+      --amber-soft: #322a1a;
+    }
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 16px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 48px 24px 96px;
+  }
+
+  header.masthead {
+    border-bottom: 3px solid var(--accent);
+    padding-bottom: 28px;
+    margin-bottom: 40px;
+  }
+
+  .eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--accent);
+    margin: 0 0 10px;
+  }
+
+  h1 {
+    font-size: 34px;
+    line-height: 1.2;
+    margin: 0 0 14px;
+    letter-spacing: -0.02em;
+  }
+
+  .lede {
+    font-size: 18px;
+    color: var(--ink-soft);
+    max-width: 62ch;
+    margin: 0;
+  }
+
+  h2 {
+    font-size: 24px;
+    letter-spacing: -0.01em;
+    margin: 56px 0 8px;
+    padding-top: 8px;
+  }
+
+  h2 .num {
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+    margin-right: 10px;
+  }
+
+  h3 {
+    font-size: 18px;
+    margin: 36px 0 6px;
+  }
+
+  h4 {
+    font-size: 15px;
+    margin: 0;
+  }
+
+  p { max-width: 68ch; }
+
+  .section-note {
+    color: var(--ink-soft);
+    margin-top: 0;
+  }
+
+  /* ---- summary tiles ---- */
+
+  .tiles {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 14px;
+    margin: 32px 0 8px;
+  }
+
+  .tile {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+  }
+
+  .tile .figure {
+    font-size: 30px;
+    font-weight: 650;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+    display: block;
+    line-height: 1.1;
+  }
+
+  .tile .caption {
+    font-size: 13px;
+    color: var(--ink-soft);
+    display: block;
+    margin-top: 4px;
+  }
+
+  /* ---- layer cards ---- */
+
+  .layers {
+    display: grid;
+    gap: 14px;
+    margin: 28px 0;
+  }
+
+  .layer {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--accent);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+  }
+
+  .layer h4 { margin-bottom: 4px; }
+
+  .layer p {
+    margin: 0;
+    color: var(--ink-soft);
+    font-size: 15px;
+  }
+
+  /* ---- file blocks ---- */
+
+  .file {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 22px 24px;
+    margin: 20px 0;
+  }
+
+  .file-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 10px;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 12px;
+    margin-bottom: 4px;
+  }
+
+  .file-name {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 15px;
+    font-weight: 600;
+  }
+
+  .badge {
+    background: var(--accent-soft);
+    color: var(--accent);
+    border-radius: 999px;
+    padding: 2px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .file-purpose {
+    flex-basis: 100%;
+    color: var(--ink-soft);
+    font-size: 14.5px;
+    margin: 0;
+  }
+
+  /* ---- individual checks ---- */
+
+  .check {
+    padding: 16px 0 4px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .check:last-child { border-bottom: 0; }
+
+  .check-title {
+    font-weight: 600;
+    margin: 0 0 4px;
+    display: flex;
+    gap: 10px;
+    align-items: baseline;
+  }
+
+  .check-title::before {
+    content: "✓";
+    color: var(--accent);
+    font-weight: 700;
+    flex: none;
+  }
+
+  .check p {
+    margin: 0;
+    color: var(--ink-soft);
+    padding-left: 24px;
+    font-size: 15px;
+  }
+
+  /* ---- callout ---- */
+
+  .callout {
+    background: var(--amber-soft);
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--amber);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    margin: 28px 0;
+  }
+
+  .callout h4 { color: var(--amber); margin-bottom: 4px; }
+
+  .callout p { margin: 0; font-size: 15px; }
+
+  /* ---- table ---- */
+
+  .table-scroll { overflow-x: auto; margin: 24px 0; }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 480px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    font-size: 15px;
+  }
+
+  th, td {
+    text-align: left;
+    padding: 11px 16px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  th {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-soft);
+  }
+
+  tbody tr:last-child td { border-bottom: 0; }
+
+  td.n { font-variant-numeric: tabular-nums; text-align: right; }
+
+  footer {
+    margin-top: 64px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+    color: var(--ink-soft);
+    font-size: 14px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="masthead">
+  <p class="eyebrow">Quality report</p>
+  <h1>Onboard — what we test, and why it matters</h1>
+  <p class="lede">
+    Onboard is the tool your Superadmin, team Leaders and new team Members use to run
+    onboarding. This document lists every automated check that runs against it, written for
+    a general audience. No technical background needed.
+  </p>
+</header>
+
+<h2><span class="num">1</span>The short version</h2>
+<p>
+  Every time the software is changed, a suite of automated checks runs against it. Each check
+  performs one small action and confirms the result is exactly what it should be. If any single
+  check disagrees, the change is stopped before it can reach you.
+</p>
+
+<div class="tiles">
+  <div class="tile"><span class="figure">115</span><span class="caption">automated checks in total</span></div>
+  <div class="tile"><span class="figure">3</span><span class="caption">levels of testing</span></div>
+  <div class="tile"><span class="figure">10</span><span class="caption">areas of the product covered</span></div>
+  <div class="tile"><span class="figure">100%</span><span class="caption">run on every change</span></div>
+</div>
+
+<h2><span class="num">2</span>Three levels of testing</h2>
+<p class="section-note">
+  The checks are organised into three levels, each answering a different kind of question.
+</p>
+
+<div class="layers">
+  <div class="layer">
+    <h4>Building-block checks <span class="badge">17 checks</span></h4>
+    <p>
+      The smallest level. These test individual pieces of internal logic on their own — for
+      example, that a password is never stored in a readable form. Fast, precise, and they
+      pinpoint the exact cause when something breaks.
+    </p>
+  </div>
+  <div class="layer">
+    <h4>System checks <span class="badge">93 checks</span></h4>
+    <p>
+      The main body of the work, and the focus of section 3. These drive the real application
+      against a real database, exercising one rule at a time: who is allowed to do what, what
+      gets saved, what gets refused. This is where the bulk of our confidence comes from.
+    </p>
+  </div>
+  <div class="layer">
+    <h4>Full journey checks <span class="badge">5 checks</span></h4>
+    <p>
+      The broadest level. These control a real web browser and walk through complete
+      real-world scenarios from start to finish, clicking the same buttons a person would.
+      Covered in section 4.
+    </p>
+  </div>
+</div>
+
+<div class="callout">
+  <h4>Every check starts from a clean slate</h4>
+  <p>
+    Before each check runs, the database is wiped and rebuilt to a known starting point. That
+    means no check can be influenced by one that ran before it, and a failure always means a
+    genuine problem rather than leftover data.
+  </p>
+</div>
+
+<h2><span class="num">3</span>System checks, area by area</h2>
+<p class="section-note">
+  Below is every system check, grouped by the part of the product it covers. Each heading is
+  the check's own name, taken directly from the code.
+</p>
+
+<!-- ============ auth.spec.js ============ -->
+<div class="file">
+  <div class="file-head">
+    <span class="file-name">auth.spec.js</span>
+    <span class="badge">13 checks</span>
+    <p class="file-purpose">Logging in, logging out, and staying logged in. The front door of the product.</p>
+  </div>
+
+  <div class="check">
+    <h4 class="check-title">the login page is reachable without a session</h4>
+    <p>A visitor who is not logged in can open the login page and see the login form. In other words, the front door is never accidentally locked to the people who need it.</p>
+  </div>
+  <div class="check">
+    <h4 class="check-title">each role is redirected to its own landing page</h4>
+    <p>A Superadmin, a Leader and a Member each log in, and each one lands on the page built for their role — leader administration, the team overview, and their own onboarding checklist respectively. Nobody has to hunt for where they are supposed to be.</p>
+  </div>
+  <div class="check">
+    <h4 class="check-title">a session cookie is issued with a relative lifetime</h4>
+    <p>When someone logs in, the browser is given a session that expires after a set period of inactivity and that other websites and scripts cannot read. This keeps a logged-in session from being left open indefinitely or stolen from the browser.</p>
+  </div>
+  <div class="check">
+    <h4 class="check-title">the wrong password is refused</h4>
+    <p>Someone who submits a real email address with the wrong password is turned away and gets no session at all. Knowing a colleague's email address is not enough to get in.</p>
+  </div>
+  <div class="check">
+    <h4 class="check-title">an unknown email is refused with the same message as a wrong password</h4>
+    <p>A made-up email address and a real address with a wrong password produce word-for-word the same error. This stops an outsider from using the login form to discover who does and does not have an account.</p>
+  </div>
+  <div class="check">
+    <h4 class="check-title">an empty password is refused</h4>
+    <p>Submitting the login form with the password field left blank is rejected. A blank field is never treated as a match.</p>
+  </div>
+  <div class="check">
+    <h4 class="check-title">the email address is matched case-insensitively</h4>
+    <p>Typing an email address in capital letters still logs the right person in. Capitalisation is a typing habit, not part of someone's identity.</p>
+  </div>
+  <div class="check">
+    <h4 class="check-title">surrounding whitespace in the email is ignored</h4>
+    <p>An email address with accidental spaces before or after it — the usual result of copying and pasting — still works. Users are not blocked by an invisible character.</p>
+  </div>
+  <div class="check">
+    <h4 class="check-title">the root path routes by role</h4>
+    <p>Opening the site's home address sends a logged-out visitor to the login page, and sends a logged-in Leader straight to their team overview. The plain web address always works as a starting point.</p>
+  </div>
+  <div class="check">
+    <h4 class="check-title">an already-logged-in visitor is bounced off the login page</h4>
+    <p>Someone who is already signed in and navigates back to the login page is moved on to their own home page instead. They are never shown a login form they do not need.</p>
+  </div>
+  <div class="check">
+    <h4 class="check-title">logging out invalidates the session on the server, not just the cookie</h4>
+    <p>After logging out, the old session is deleted on the server — so even replaying the exact browser data captured before logging out will not get back in. Logging out genuinely ends access, which matters on shared or lost devices.</p>
+  </div>
+  <div class="check">
+    <h4 class="check-title">a session whose user was cascade-deleted is logged out, not served an error</h4>
+    <p>If an account is removed while that person is still logged in, their next click takes them calmly to the login page. They see a normal sign-in screen rather than a crash or an error page.</p>
+  </div>
+  <div class="check">
+    <h4 class="check-title">an unknown path renders a 404 page</h4>
+    <p>A web address that does not exist shows a proper "page not found" page. Mistyped or outdated links fail gracefully.</p>
+  </div>
+</div>
+
+<!-- ============ authorization.spec.js ============ -->
+<div class="file">
+  <div class="file-head">
+    <span class="file-name">authorization.spec.js</span>
+    <span class="badge">22 checks</span>
+    <p class="file-purpose">Permissions. Every protected page and action is tested against every role that must <em>not</em> be able to reach it.</p>
+  </div>
+
+  <div class="check">
+    <h4 class="check-title">&lt;each protected page&gt; redirects an anonymous visitor to the login page</h4>
+    <p>For all seven protected pages and actions in the product, a visitor who is not logged in is sent to the login page instead. Nothing sensitive is reachable by simply guessing a web address.</p>
+  </div>
+  <div class="check">
+    <h4 class="check-title">&lt;each protected page&gt; is forbidden for a &lt;wrong role&gt;</h4>
+    <p>Each of those seven pages and actions is attempted by both roles that should not have it, and each attempt is explicitly refused — fourteen combinations in total. A Member cannot open the leader administration screen, a Leader cannot delete other Leaders, a Superadmin does not act inside somebody's personal checklist, and so on.</p>
+  </div>
+  <div class="check">
+    <h4 class="check-title">the test-support endpoints are the only unauthenticated routes</h4>
+    <p>A final check on the list itself: it confirms all seven protected areas are still being covered, and that the only pages open to the public are logging in and logging out. If a future change adds a new page without permission rules, this check flags it.</p>
+  </div>
+</div>
+
+<!-- ============ leaders.spec.js ============ -->
+<div class="file">
+  <div class="file-head">
+    <span class="file-name">leaders.spec.js</span>
+    <span class="badge">11 checks</span>
+    <p class="file-purpose">The Superadmin's work: adding, listing and removing team Leaders.</p>
+  </div>
+
+  <div class="check">
+    <h4 class="check-title">creating a leader also creates exactly one team for them</h4>
+    <p>Adding a Leader automatically gives them one team to run, named after them, and no more than one. The Superadmin does not have to set up teams as a separate step.</p>
+  </div>
+  <div class="check">
+    <h4 class="check-title">the new leader can log in with the password that was set</h4>
+    <p>A freshly created Leader can immediately sign in with the password the Superadmin chose and reaches their team page. The account works from the moment it is made.</p>
+  </div>
+  <div class="check">
+    <h4 class="check-title">a duplicate email is rejected and creates nothing</h4>
+    <p>Adding the same Leader twice shows a clear error and leaves exactly one account and one team behind. Nobody ends up with an accidental duplicate.</p>
+  </div>
+  <div class="check">
+    <h4 class="check-title">the superadmin email cannot be reused for a leader</h4>
+    <p>Trying to create a Leader using the Superadmin's own email address is refused and nothing is created. One email address always means one person.</p>
+  </div>
+  <div class="check">
+    <h4 class="check-title">a missing email or password is rejected</h4>
+    <p>Submitting the form with a blank email, a blank password, or nothing at all is refused in each case, and no accounts appear. Half-filled forms cannot create broken accounts.</p>
+  </div>
+  <div class="check">
+    <h4 class="check-title">the email is stored lowercased and trimmed</h4>
+    <p>An address typed with mixed capitals and stray spaces is tidied up before it is saved. Every address is stored in one consistent form, so it always matches later.</p>
+  </div>
+  <div class="check">
+    <h4 class="check-title">the leader list shows each leader and their member count</h4>
+    <p>The administration screen lists every Leader together with the correct number of people on their team — including a zero for a Leader who has nobody yet. The Superadmin gets an accurate overview at a glance.</p>
+  </div>
+  <div class="check">
+    <h4 class="check-title">removing a leader deletes them and their team</h4>
+    <p>Removing a Leader takes away both their account and the team they were running. Nothing is left behind pointing at a person who is gone.</p>
+  </div>
+  <div class="check">
+    <h4 class="check-title">removing a non-existent leader is a harmless no-op</h4>
+    <p>A removal request for someone who is not there does nothing at all and does not fail. A stale page or a double-click cannot cause damage.</p>
+  </div>
+  <div class="check">
+    <h4 class="check-title">the delete route refuses to remove a member</h4>
+    <p>The "remove Leader" action cannot be redirected at an ordinary team Member — the Member and their onboarding progress remain untouched. One delete button cannot be turned against the wrong kind of account.</p>
+  </div>
+  <div class="check">
+    <h4 class="check-title">the delete route refuses to remove the superadmin</h4>
+    <p>The same action cannot be used to delete the Superadmin account either. The system cannot be locked out of its own administration.</p>
+  </div>
+</div>
+
+<!-- ============ invitations.spec.js ============ -->
+<div class="file">
+  <div class="file-head">
+    <span class="file-name">invitations.spec.js</span>
+    <span class="badge">16 checks</span>
+    <p class="file-purpose">Inviting a new team Member by email, and that person accepting the invitation.</p>
+  </div>
+
+  <div class="check">
+    <h4 class="check-title">an invitation is stored as pending and emailed with a matching link</h4>
+    <p>Sending an invitation records it as awaiting a reply and emails the invitee a personal link — and the link in the email is verified to be the very same one stored in the system. Invitations that arrive always work.</p>
+  </div>
+  <div class="check">
+    <h4 class="check-title">the invitation token matches the documented derivation</h4>
+    <p>The unique code in the invitation link is built exactly the way the documentation says. The behaviour of the product matches its written description.</p>
+  </div>
+  <div class="check">
+    <h4 class="check-title">inviting the same address twice while pending is rejected</h4>
+    <p>Inviting someone who already has an unanswered invitation shows an error and sends no second email. Nobody gets chased twice for the same thing.</p>
+  </div>
+  <div class="check">
+    <h4 class="check-title">inviting someone who already has an account is rejected</h4>
+    <p>Inviting a person who is already in the system is refused, with no invitation stored and no email sent. Existing users are not invited to join again.</p>
+  </div>
+  <div class="check">
+    <h4 class="check-title">an empty email address is rejected</h4>
+    <p>Submitting the invitation form with a blank address shows an error and stores nothing. No invitation is ever created without a recipient.</p>
+  </div>
+  <div class="check">
+    <h4 class="check-title">the invited address is lowercased and trimmed</h4>
+    <p>An invited address typed with capitals and extra spaces is cleaned up before being saved. The invitation still reaches the right inbox and matches correctly afterwards.</p>
+  </div>
+  <div class="check">
+    <h4 class="check-title">two different invitations produce two emails and two rows</h4>
+    <p>Inviting two people results in two records, two emails, and two different links. Invitations never get mixed up between recipients.</p>
+  </div>
+  <div class="check">
+    <h4 class="check-title">the accept page names the invited address</h4>
+    <p>Opening an invitation link shows a page displaying the email address that was invited. The recipient can see the invitation is genuinely meant for them before signing up.</p>
+  </div>
+  <div class="check">
+    <h4 class="check-title">accepting creates a member on the inviting leader team</h4>
+    <p>Accepting an invitation creates one Member account attached to the team of the Leader who sent it, and marks the invitation as accepted with a timestamp. New joiners land on the correct team automatically.</p>
+  </div>
+  <div class="check">
+    <h4 class="check-title">accepting logs the new member straight in</h4>
+    <p>After choosing a password, the new Member is signed in and looking at their own onboarding page. There is no second, separate login step to stumble over on day one.</p>
+  </div>
+  <div class="check">
+    <h4 class="check-title">the account email comes from the invitation, not the request body</h4>
+    <p>An attacker holding an invitation link tries to sign up under a different email address, with elevated permissions and on another team — and all of it is ignored in favour of the invitation's own details. A leaked link cannot be turned into an administrator account.</p>
+  </div>
+  <div class="check">
+    <h4 class="check-title">a short password is refused and leaves the invitation usable</h4>
+    <p>Choosing too short a password is rejected, no account is created, and — importantly — the invitation link still works so the person can try again. A typo does not burn their only chance to join.</p>
+  </div>
+  <div class="check">
+    <h4 class="check-title">an unknown token is refused</h4>
+    <p>A guessed or corrupted invitation link is turned away with a clear message and creates no account. Invitation links cannot be guessed into existence.</p>
+  </div>
+  <div class="check">
+    <h4 class="check-title">a used token is refused with a distinct message</h4>
+    <p>Revisiting a link that has already been used says specifically that the invitation has already been used, rather than that it is invalid. The person understands they are already signed up rather than thinking something is broken.</p>
+  </div>
+  <div class="check">
+    <h4 class="check-title">posting to a used token does not create a second account</h4>
+    <p>Submitting the sign-up form again on an already-used link is refused and the person still has exactly one account. One invitation always means one account.</p>
+  </div>
+  <div class="check">
+    <h4 class="check-title">two simultaneous redemptions create exactly one member</h4>
+    <p>Two people use the same invitation link at the very same instant: one is let in, the other is refused, and exactly one account exists afterwards. A forwarded link cannot be used to sneak in an extra person.</p>
+  </div>
+</div>
+
+<!-- ============ invitation-claim.spec.js ============ -->
+<div class="file">
+  <div class="file-head">
+    <span class="file-name">invitation-claim.spec.js</span>
+    <span class="badge">3 checks</span>
+    <p class="file-purpose">A deeper look at the same "used only once" guarantee, tested directly at the database level where the timing can be controlled precisely.</p>
+  </div>
+
+  <div class="check">
+    <h4 class="check-title">two interleaved transactions cannot both claim one invitation</h4>
+    <p>Two attempts to accept the same invitation are deliberately paused halfway and interleaved, so they overlap in the narrowest possible window. Only the first succeeds — proving the single-use rule is enforced by the database itself rather than by lucky timing.</p>
+  </div>
+  <div class="check">
+    <h4 class="check-title">claiming an already-accepted invitation returns nothing</h4>
+    <p>An invitation that has already been accepted cannot be accepted a second time, even when approached directly and bypassing the website. The rule holds at the deepest level.</p>
+  </div>
+  <div class="check">
+    <h4 class="check-title">claiming a non-existent invitation returns nothing</h4>
+    <p>An attempt to accept an invitation that never existed simply comes back empty. Made-up references cannot conjure up an account.</p>
+  </div>
+</div>
+
+<!-- ============ onboarding.spec.js ============ -->
+<div class="file">
+  <div class="file-head">
+    <span class="file-name">onboarding.spec.js</span>
+    <span class="badge">13 checks</span>
+    <p class="file-purpose">The new Member's onboarding checklist, and the progress their Leader sees.</p>
+  </div>
+
+  <div class="check">
+    <h4 class="check-title">a fresh member starts with no progress rows</h4>
+    <p>A brand-new Member begins at "0 of 3 completed" with nothing recorded yet. Everyone starts from the same clean, honest position.</p>
+  </div>
+  <div class="check">
+    <h4 class="check-title">checking a step writes exactly one row</h4>
+    <p>Ticking one item on the checklist records exactly one completed step — the right one. What the Member sees on screen matches what is actually saved.</p>
+  </div>
+  <div class="check">
+    <h4 class="check-title">checking all three steps writes three rows and reports completion</h4>
+    <p>Ticking all three items records all three and the page confirms onboarding is complete. Finishing the process is recognised and acknowledged.</p>
+  </div>
+  <div class="check">
+    <h4 class="check-title">re-checking an already-checked step is idempotent</h4>
+    <p>Ticking an item that is already ticked leaves the original record exactly as it was, with no duplicate. Repeating an action never distorts the record.</p>
+  </div>
+  <div class="check">
+    <h4 class="check-title">a double-submitted step still yields one row</h4>
+    <p>An impatient double-click that sends the same tick twice at once still results in a single completed step. A twitchy mouse cannot corrupt someone's progress.</p>
+  </div>
+  <div class="check">
+    <h4 class="check-title">unchecking a step deletes its row</h4>
+    <p>Un-ticking an item removes it from the record so it counts as not done again. Members can correct a mistake themselves.</p>
+  </div>
+  <div class="check">
+    <h4 class="check-title">unchecking a step that was never checked is harmless</h4>
+    <p>Un-ticking something that was never ticked in the first place does nothing and causes no error. Out-of-order clicks are handled quietly.</p>
+  </div>
+  <div class="check">
+    <h4 class="check-title">re-checking after unchecking creates a new row</h4>
+    <p>Un-ticking and then re-ticking an item records it freshly rather than resurrecting the old entry. The record reflects what actually happened, most recently.</p>
+  </div>
+  <div class="check">
+    <h4 class="check-title">unchecking one step leaves the others alone</h4>
+    <p>Un-ticking the middle item on a fully completed checklist leaves the other two completed. Changing one answer never quietly resets the rest.</p>
+  </div>
+  <div class="check">
+    <h4 class="check-title">an unknown step key is rejected and writes nothing</h4>
+    <p>Requests referring to checklist items that do not exist — including deliberately malformed ones aimed at reading files from the server — are all refused, and nothing is recorded. Invented input cannot create phantom progress or probe the server.</p>
+  </div>
+  <div class="check">
+    <h4 class="check-title">progress is attributed to the session user, not to request input</h4>
+    <p>A tampered-with request that tries to credit its progress to a different person is ignored; the progress lands on the account actually signed in. Nobody can complete onboarding on somebody else's behalf.</p>
+  </div>
+  <div class="check">
+    <h4 class="check-title">the leader sees the member progress count update</h4>
+    <p>The Leader's team page shows "0/3", then correctly shows "2/3" after their Member ticks two items. Leaders see real, current progress rather than a stale number.</p>
+  </div>
+  <div class="check">
+    <h4 class="check-title">a leader does not see members of another team</h4>
+    <p>A Leader with an empty team is told nobody has joined yet, and none of the other team's Members appear anywhere on their page. Teams are genuinely separated from each other.</p>
+  </div>
+</div>
+
+<!-- ============ cascade.spec.js ============ -->
+<div class="file">
+  <div class="file-head">
+    <span class="file-name">cascade.spec.js</span>
+    <span class="badge">8 checks</span>
+    <p class="file-purpose">What happens to a team, its Members and their data when a Leader is removed. Deletion is deliberate and complete — no partial leftovers.</p>
+  </div>
+
+  <div class="check">
+    <h4 class="check-title">the fixture starts in the expected shape</h4>
+    <p>Before anything is deleted, the starting situation is confirmed: one Superadmin, two Leaders, three Members, plus their invitations and progress. The later checks are measured against a known and verified baseline.</p>
+  </div>
+  <div class="check">
+    <h4 class="check-title">a leader with three members takes their whole team with them</h4>
+    <p>Removing a Leader who has three Members also removes those Members, their team, their invitations and their progress — while the Superadmin and the other Leader are untouched. Deletion is thorough and leaves nothing orphaned.</p>
+  </div>
+  <div class="check">
+    <h4 class="check-title">progress rows disappear regardless of how far along the member was</h4>
+    <p>Members who had completed nothing, one item, and everything are all removed equally cleanly. How far someone had progressed does not change what is deleted.</p>
+  </div>
+  <div class="check">
+    <h4 class="check-title">the other leader team is untouched</h4>
+    <p>After one Leader is removed, the second Leader and their team remain entirely intact. A deletion never spills over into a neighbouring team.</p>
+  </div>
+  <div class="check">
+    <h4 class="check-title">deleting the childless leader leaves the populated team intact</h4>
+    <p>Removing the Leader who has no Members leaves every other account, team and piece of progress exactly as it was. Only what was asked for is removed.</p>
+  </div>
+  <div class="check">
+    <h4 class="check-title">deleting both leaders empties everything but the superadmin</h4>
+    <p>Removing both Leaders in turn leaves a system containing just the Superadmin and nothing else. The product returns cleanly to its starting state, with no fragments left over.</p>
+  </div>
+  <div class="check">
+    <h4 class="check-title">a deleted leader can no longer log in</h4>
+    <p>A Leader who has been removed is refused at the login page. Removing an account genuinely revokes access.</p>
+  </div>
+  <div class="check">
+    <h4 class="check-title">a member of a deleted team can no longer log in</h4>
+    <p>A Member whose team was removed along with their Leader is also refused at the login page. Access does not survive the loss of the team it belonged to.</p>
+  </div>
+</div>
+
+<!-- ============ determinism.spec.js ============ -->
+<div class="file">
+  <div class="file-head">
+    <span class="file-name">determinism.spec.js</span>
+    <span class="badge">7 checks</span>
+    <p class="file-purpose">Checks on the testing itself. These guarantee the test results are trustworthy and repeatable rather than accidentally passing.</p>
+  </div>
+
+  <div class="check">
+    <h4 class="check-title">every seed produces an identical dump when applied twice</h4>
+    <p>Each of the standard starting situations is built twice and the two results are compared piece by piece; they must be identical. Tests are measured against a fixed baseline, so a failure always means a real change in behaviour.</p>
+  </div>
+  <div class="check">
+    <h4 class="check-title">no seeded timestamp comes from the real clock</h4>
+    <p>None of the test data carries today's actual date; every date is a fixed, deliberate value. The same tests will give the same results next month and next year.</p>
+  </div>
+  <div class="check">
+    <h4 class="check-title">rows created through the app also use the fixed clock</h4>
+    <p>Data created by using the application during a test — such as sending an invitation — is also stamped with the fixed test date. Nothing sneaks the real clock in through the back door.</p>
+  </div>
+  <div class="check">
+    <h4 class="check-title">an invitation token is reproducible across resets</h4>
+    <p>Running the same invitation twice from the same starting point produces the same link both times. Test results do not depend on chance.</p>
+  </div>
+  <div class="check">
+    <h4 class="check-title">the dump covers every table and orders rows by id</h4>
+    <p>The snapshot used to compare results includes every kind of stored data, always in the same order. Nothing can quietly go unchecked because it was left out of the comparison.</p>
+  </div>
+  <div class="check">
+    <h4 class="check-title">the base seed contains only the superadmin</h4>
+    <p>The empty starting situation really is empty apart from the Superadmin — no teams, no invitations, no progress. "From scratch" tests genuinely start from scratch.</p>
+  </div>
+  <div class="check">
+    <h4 class="check-title">resetting truncates data left by a previous test</h4>
+    <p>Data created during one test is confirmed to be gone after the reset that precedes the next one. No test can be helped or hindered by the one before it.</p>
+  </div>
+</div>
+
+<h2><span class="num">4</span>Full journey checks</h2>
+<p class="section-note">
+  These five checks drive a real web browser through complete real-world scenarios, clicking
+  buttons and filling in forms exactly as a person would. At the end of each one, the entire
+  contents of the database are compared against a pre-approved record — so nothing changes
+  behind the scenes without someone noticing.
+</p>
+
+<div class="file">
+  <div class="file-head">
+    <span class="file-name">Complete scenarios</span>
+    <span class="badge">5 checks</span>
+  </div>
+
+  <div class="check">
+    <h4 class="check-title">superadmin can create leaders in an empty system</h4>
+    <p>Starting from a completely fresh system, the Superadmin logs in, sees the "no leaders yet" message, and adds two Leaders who each appear in the list with their own team. This is day one of using the product.</p>
+  </div>
+  <div class="check">
+    <h4 class="check-title">a leader invites a member and sees their progress</h4>
+    <p>A Leader invites two people; one accepts via the emailed link, sets a password and works through all three checklist items while the Leader watches the count climb from 0/3 to 3/3. The invitation nobody answered stays visibly pending. This is the core everyday loop of the product.</p>
+  </div>
+  <div class="check">
+    <h4 class="check-title">a leader with a member is deleted</h4>
+    <p>The Superadmin removes a Leader who has one Member, and the Leader, their Member, their team, their invitations and their progress all disappear together, while the other Leader is untouched. This is the offboarding path, verified end to end.</p>
+  </div>
+  <div class="check">
+    <h4 class="check-title">onboarding progress is stored in the database</h4>
+    <p>A Member with two items already completed finishes the third, sees the completion message, then logs out and back in again to find all three still ticked. Progress is genuinely saved, not just displayed on screen.</p>
+  </div>
+  <div class="check">
+    <h4 class="check-title">an invite link can only be used once</h4>
+    <p>An invitation link is used to create an account, then the same link is opened again and clearly reports that it has already been used — with no second account created, even when the sign-up is submitted directly. Invitation links cannot be forwarded and reused.</p>
+  </div>
+</div>
+
+<h2><span class="num">5</span>Coverage at a glance</h2>
+
+<div class="table-scroll">
+<table>
+  <thead>
+    <tr><th>Area</th><th>What it covers</th><th class="n">Checks</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Logging in &amp; sessions</td><td>The front door and staying signed in</td><td class="n">13</td></tr>
+    <tr><td>Permissions</td><td>Every protected page against every wrong role</td><td class="n">22</td></tr>
+    <tr><td>Managing Leaders</td><td>Superadmin adding, listing and removing Leaders</td><td class="n">11</td></tr>
+    <tr><td>Invitations</td><td>Sending invitations and accepting them</td><td class="n">16</td></tr>
+    <tr><td>Single-use links</td><td>An invitation can never be used twice</td><td class="n">3</td></tr>
+    <tr><td>Onboarding checklist</td><td>Member progress and the Leader's view of it</td><td class="n">13</td></tr>
+    <tr><td>Removing a team</td><td>Complete, clean deletion with no leftovers</td><td class="n">8</td></tr>
+    <tr><td>Test reliability</td><td>Guarantees the results themselves are trustworthy</td><td class="n">7</td></tr>
+    <tr><td>Internal logic</td><td>Building-block checks on passwords, links and steps</td><td class="n">17</td></tr>
+    <tr><td>Full journeys</td><td>Complete scenarios driven through a real browser</td><td class="n">5</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2><span class="num">6</span>What this gives you</h2>
+<p>
+  Three themes run through the whole suite, and they are worth naming directly.
+</p>
+
+<div class="layers">
+  <div class="layer">
+    <h4>People only see what they should</h4>
+    <p>
+      Twenty-two checks test permissions from the wrong side — attempting each protected
+      action as every role that must not have it. On top of that, Leaders are confirmed unable
+      to see other teams' Members, and progress can only ever be recorded against the person
+      actually signed in.
+    </p>
+  </div>
+  <div class="layer">
+    <h4>Mistakes and misuse are handled calmly</h4>
+    <p>
+      Blank forms, duplicate entries, double-clicks, stale pages, mistyped web addresses,
+      forwarded invitation links, guessed links and deliberately tampered requests are all
+      tested. In every case the product refuses clearly and changes nothing, rather than
+      crashing or saving something wrong.
+    </p>
+  </div>
+  <div class="layer">
+    <h4>What you see is what is stored</h4>
+    <p>
+      The checks do not stop at the screen. After each action they inspect what was actually
+      saved, and the five full-journey checks compare the entire database against a
+      pre-approved record. Progress shown to a Leader is real progress, and data that was
+      deleted is genuinely gone.
+    </p>
+  </div>
+</div>
+
+<footer>
+  <p>
+    Onboard — automated test overview. 115 checks across 10 areas of the product, all of which
+    run on every change to the software. Prepared 4 September 2026.
+  </p>
+</footer>
+
+</div>
+</body>
+</html>
