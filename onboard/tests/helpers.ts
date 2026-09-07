@@ -8,6 +8,12 @@ const root = path.resolve(__dirname, "..");
 export const EPOCH = "2026-01-01T00:00:00.000Z";
 export const EPOCH_PLUS_24H = "2026-01-02T00:00:00.000Z";
 
+// Invitation emails embed this, so the dump assertions cannot hardcode a port —
+// each worktree runs its dev server on its own. Mirrors the fallback in
+// app/api/invitations/route.ts.
+export const APP_URL =
+  process.env.APP_URL ?? `http://localhost:${process.env.PORT ?? 3000}`;
+
 const FIXED_SALT = "6f6e626f6172642d66697865642d73616c74";
 
 export function hash(password: string): string {

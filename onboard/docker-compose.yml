@@ -1,3 +1,12 @@
+# One Postgres server is shared by every worktree; each worktree gets its own
+# database inside it (see scripts/worktree.sh). Truncation in the E2E tests is
+# per-database, so worktrees stay isolated without a container each.
+#
+# The project name is pinned because Compose otherwise derives it from the
+# directory basename — which is `onboard` in every worktree, and in unrelated
+# checkouts elsewhere on this machine.
+name: onboard-dev
+
 services:
   db:
     image: postgres:16
@@ -6,9 +15,14 @@ services:
       POSTGRES_PASSWORD: onboard
       POSTGRES_DB: onboard
     ports:
-      - "5434:5432"
+      - "${DB_PORT:-5434}:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U onboard -d onboard"]
+      interval: 2s
+      timeout: 3s
+      retries: 15
 
 volumes:
   pgdata:

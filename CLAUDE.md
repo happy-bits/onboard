@@ -15,9 +15,10 @@ consult `onboard/node_modules/next/dist/docs/` before writing framework code.
 ## Commands
 
 ```bash
+cp .env.example .env              # first time only; per-worktree config
 docker compose up -d              # Postgres 16 on host port 5434 (5432/5433 taken locally)
 npx prisma migrate dev            # apply prisma/schema.prisma
-npm run dev                       # http://localhost:3000
+npm run dev                       # port/URL come from .env (default 3000)
 npm run lint                      # eslint (flat config)
 npm run seed                      # truncate + seed Superadmin only
 npm run seed superadmin+leader    # truncate + seed Superadmin and Leader
@@ -29,12 +30,47 @@ npx playwright test tests/onboarding.spec.ts   # a single test file
 npx playwright test -g "leader invites"        # a single test by name
 ```
 
-Playwright starts `npm run dev` itself with `TEST_MODE=1` and reuses an already-running server outside CI — a dev
-server you started manually **without** `TEST_MODE=1` will make the deterministic tests fail. Tests run with
-`workers: 1`, non-parallel, because each one truncates and reseeds the shared database.
+Playwright starts `npm run dev` itself with `TEST_MODE=1`, and never reuses a running server
+(`reuseExistingServer: false`) — the deterministic clock offset and token counters live in that process, and another
+worktree's server points at a different database, so adopting one would silently corrupt a run. Stop your own dev
+server before `npm run test:e2e`, or give it a different `PORT`. Tests run with `workers: 1`, non-parallel, because
+each one truncates and reseeds its database.
 
 Seeded credentials: `admin@onboard.local` / `admin123`, and `leader@onboard.local` / `leader123` in the
 `superadmin+leader` scenario.
+
+## Parallel worktrees (one per agent)
+
+Any number of agents can work at once. One shared Postgres container holds a **database per worktree**, and each
+worktree gets its own dev-server port — truncation in the tests is per-database, so they don't collide.
+
+```bash
+npm run worktree -- add <name>     # worktree + branch + free port + database + install + migrate
+npm run worktree -- list           # every worktree with its port and database
+npm run worktree -- remove <name>  # delete worktree, drop database (prompts; FORCE=1 to discard changes)
+```
+
+`add` creates `../onboard-<slug>/` on branch `<name>` (existing branch reused, otherwise created), allocates the
+lowest port from 3000 up that no other worktree claims and nothing is listening on, and writes `onboard/.env` with
+`DATABASE_URL`, `PORT` and `APP_URL`. It is idempotent — re-running keeps the same port and database.
+
+Things worth knowing:
+
+- **`docker-compose.yml` pins `name: onboard-dev`.** Compose otherwise derives the project name from the directory
+  basename, which is `onboard` in *every* worktree and in unrelated checkouts elsewhere on the machine — that caused
+  a real cross-project container collision. Don't remove the `name:`. `DB_PORT` overrides the host port.
+- **One container, many databases.** `docker compose up -d` from any worktree reaches the same container; only the
+  main checkout needs to start it (`add` does it automatically).
+- **`npm run dev` goes through `scripts/dev.ts`.** `next dev` reads `PORT` from the process env while parsing argv,
+  *before* it loads `.env`, so the port has to be passed explicitly for a per-worktree `.env` to take effect.
+- **Nothing may hardcode port 3000.** Invitation emails embed `APP_URL`, and the tests assert the full database dump
+  including those bodies — `tests/helpers.ts` exports `APP_URL` for that. Use it instead of a literal.
+- **`node_modules` is gitignored**, so every new worktree needs its own `npm install` (`add` runs it).
+- **`prisma generate` is a separate step.** There is no postinstall hook and `migrate deploy` doesn't generate the
+  client (`migrate dev` does), so a worktree without it dies on `Cannot find module '.prisma/client/default'`.
+  `add` runs it.
+- **`add` branches from `HEAD`**, so anything uncommitted in your checkout — including changes to this tooling —
+  is *not* inherited by a new worktree. Commit before fanning agents out.
 
 ## Architecture
 
