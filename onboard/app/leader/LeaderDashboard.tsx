@@ -94,7 +94,17 @@ export default function LeaderDashboard({
         </ul>
       )}
 
-      <h2 className="mt-8 mb-3 text-lg font-semibold">Member progress</h2>
+      <div className="mt-8 mb-3 flex items-center justify-between">
+        <h2 className="text-lg font-semibold">Member progress</h2>
+        <a
+          className="rounded border px-3 py-1 text-sm hover:bg-gray-100"
+          href="/api/leader/export"
+          download
+          data-testid="export-csv"
+        >
+          Download CSV
+        </a>
+      </div>
       {members.length === 0 ? (
         <p className="text-gray-500">No members yet.</p>
       ) : (
