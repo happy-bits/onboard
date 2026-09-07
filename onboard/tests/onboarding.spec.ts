@@ -83,6 +83,7 @@ test("leader invites members and follows onboarding progress", async ({
       {
         id: 1,
         email: "admin@onboard.local",
+        displayName: null,
         passwordHash: hash("admin123"),
         role: "SUPERADMIN",
         teamId: null,
@@ -90,6 +91,7 @@ test("leader invites members and follows onboarding progress", async ({
       {
         id: 2,
         email: "leader@onboard.local",
+        displayName: null,
         passwordHash: hash("leader123"),
         role: "LEADER",
         teamId: null,
@@ -97,6 +99,7 @@ test("leader invites members and follows onboarding progress", async ({
       {
         id: 3,
         email: "member1@onboard.local",
+        displayName: null,
         passwordHash: hash("member1pass"),
         role: "MEMBER",
         teamId: 1,

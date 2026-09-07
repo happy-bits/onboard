@@ -17,7 +17,7 @@ export default async function LeaderPage() {
       members: {
         where: { role: "MEMBER" },
         orderBy: { id: "asc" },
-        select: { id: true, email: true, progress: true },
+        select: { id: true, email: true, displayName: true, progress: true },
       },
       invitations: { orderBy: { id: "asc" } },
     },
@@ -34,6 +34,7 @@ export default async function LeaderPage() {
         initialMembers={team.members.map((m) => ({
           id: m.id,
           email: m.email,
+          displayName: m.displayName,
           progress: m.progress && {
             step1: m.progress.step1,
             step2: m.progress.step2,
