@@ -116,4 +116,8 @@ These were open questions; resolved as follows while building:
 - **Docker scope:** only Postgres runs in Docker. The Next.js app and Playwright run locally against it. Postgres is published on host port **5434**, because 5432 and 5433 were already taken by local Postgres installations on the dev machine.
 - **Re-invite behavior:** re-inviting the same email replaces (deletes) any pending invitation for that team and sends a new one. Inviting an email that already has an account is rejected. A Member belongs to exactly one team.
 - **Role views:** minimal. The Superadmin manages Leaders only. The Leader sees their invitations (pending/accepted) and each Member's progress as a count (e.g. `2/3`). The Member sees only their own checklist.
+- **Member display name:** a Member can set an optional `displayName` on their own user row (`POST /api/profile`,
+  which re-checks the MEMBER role and only ever updates the session's own user). It is shown in place of the email
+  on the Member's onboarding page and on the Leader dashboard, falling back to the email when unset, and travels in
+  the SSE snapshot so the dashboard updates live. Dashboard `data-testid` hooks stay keyed on the email.
 - **Teams:** an explicit `Team` entity, auto-created when the Superadmin creates a Leader, named deterministically as `Team <leader email>`. There is no team-management UI.

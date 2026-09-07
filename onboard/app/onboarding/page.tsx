@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { currentUser } from "@/lib/auth";
 import LogoutButton from "@/components/LogoutButton";
 import Checklist from "./Checklist";
+import DisplayNameForm from "./DisplayNameForm";
 
 export const dynamic = "force-dynamic";
 
@@ -21,6 +22,10 @@ export default async function OnboardingPage() {
         <h1 className="text-2xl font-bold">Your onboarding</h1>
         <LogoutButton />
       </div>
+      <DisplayNameForm
+        email={user.email}
+        initialDisplayName={user.displayName}
+      />
       <Checklist
         initial={{
           step1: progress?.step1 ?? false,

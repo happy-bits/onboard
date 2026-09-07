@@ -29,6 +29,7 @@ test("superadmin creates two leaders", async ({ page }) => {
       {
         id: 1,
         email: "admin@onboard.local",
+        displayName: null,
         passwordHash: hash("admin123"),
         role: "SUPERADMIN",
         teamId: null,
@@ -36,6 +37,7 @@ test("superadmin creates two leaders", async ({ page }) => {
       {
         id: 2,
         email: "leader1@onboard.local",
+        displayName: null,
         passwordHash: hash("leader1pass"),
         role: "LEADER",
         teamId: null,
@@ -43,6 +45,7 @@ test("superadmin creates two leaders", async ({ page }) => {
       {
         id: 3,
         email: "leader2@onboard.local",
+        displayName: null,
         passwordHash: hash("leader2pass"),
         role: "LEADER",
         teamId: null,
