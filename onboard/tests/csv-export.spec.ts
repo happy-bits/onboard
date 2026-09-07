@@ -101,6 +101,7 @@ test("leader exports the team's progress as CSV", async ({ browser }) => {
       {
         id: 1,
         email: "admin@onboard.local",
+        displayName: null,
         passwordHash: hash("admin123"),
         role: "SUPERADMIN",
         teamId: null,
@@ -108,6 +109,7 @@ test("leader exports the team's progress as CSV", async ({ browser }) => {
       {
         id: 2,
         email: "leader@onboard.local",
+        displayName: null,
         passwordHash: hash("leader123"),
         role: "LEADER",
         teamId: null,
@@ -115,6 +117,7 @@ test("leader exports the team's progress as CSV", async ({ browser }) => {
       {
         id: 3,
         email: "member1@onboard.local",
+        displayName: null,
         passwordHash: hash("member1pass"),
         role: "MEMBER",
         teamId: 1,
@@ -122,6 +125,7 @@ test("leader exports the team's progress as CSV", async ({ browser }) => {
       {
         id: 4,
         email: "member2@onboard.local",
+        displayName: null,
         passwordHash: hash("member2pass"),
         role: "MEMBER",
         teamId: 1,
