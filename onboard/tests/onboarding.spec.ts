@@ -5,6 +5,7 @@ import {
   hash,
   EPOCH,
   EPOCH_PLUS_24H,
+  APP_URL,
 } from "./helpers";
 
 test("leader invites members and follows onboarding progress", async ({
@@ -134,14 +135,14 @@ test("leader invites members and follows onboarding progress", async ({
         id: 1,
         to: "member1@onboard.local",
         subject: "You have been invited to onboard",
-        body: `Hi! leader@onboard.local invited you to join Team leader@onboard.local. Follow this link to create your account: http://localhost:3000/invite/invite-token-1 (valid for 24 hours)`,
+        body: `Hi! leader@onboard.local invited you to join Team leader@onboard.local. Follow this link to create your account: ${APP_URL}/invite/invite-token-1 (valid for 24 hours)`,
         sentAt: EPOCH,
       },
       {
         id: 2,
         to: "member2@onboard.local",
         subject: "You have been invited to onboard",
-        body: `Hi! leader@onboard.local invited you to join Team leader@onboard.local. Follow this link to create your account: http://localhost:3000/invite/invite-token-2 (valid for 24 hours)`,
+        body: `Hi! leader@onboard.local invited you to join Team leader@onboard.local. Follow this link to create your account: ${APP_URL}/invite/invite-token-2 (valid for 24 hours)`,
         sentAt: EPOCH,
       },
     ],

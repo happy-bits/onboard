@@ -8,6 +8,11 @@ const root = path.resolve(__dirname, "..");
 export const EPOCH = "2026-01-01T00:00:00.000Z";
 export const EPOCH_PLUS_24H = "2026-01-02T00:00:00.000Z";
 
+// Invitation emails embed APP_URL, so the expected dump has to follow whatever
+// port this checkout runs on. Defaults to 3000 for normal single-app use.
+export const APP_URL =
+  process.env.APP_URL ?? `http://localhost:${process.env.PORT ?? "3000"}`;
+
 const FIXED_SALT = "6f6e626f6172642d66697865642d73616c74";
 
 export function hash(password: string): string {
