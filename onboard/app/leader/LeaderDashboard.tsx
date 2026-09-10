@@ -4,7 +4,12 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 type Progress = { step1: boolean; step2: boolean; step3: boolean } | null;
-type Member = { id: number; email: string; progress: Progress };
+type Member = {
+  id: number;
+  email: string;
+  displayName: string | null;
+  progress: Progress;
+};
 type Invitation = { id: number; email: string; used: boolean };
 
 function progressLabel(p: Progress): string {
@@ -105,7 +110,7 @@ export default function LeaderDashboard({
               className="flex items-center justify-between px-4 py-3"
               data-testid={`member-${member.email}`}
             >
-              <span>{member.email}</span>
+              <span>{member.displayName ?? member.email}</span>
               <span
                 className="font-mono text-sm"
                 data-testid={`progress-${member.email}`}

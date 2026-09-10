@@ -27,7 +27,7 @@ export async function GET() {
           const members = await prisma.user.findMany({
             where: { teamId: team.id, role: "MEMBER" },
             orderBy: { id: "asc" },
-            select: { id: true, email: true, progress: true },
+            select: { id: true, email: true, displayName: true, progress: true },
           });
           const payload = JSON.stringify(members);
           if (payload !== lastPayload) {
