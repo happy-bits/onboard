@@ -12,6 +12,12 @@ export default function LeaderAdmin({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [search, setSearch] = useState("");
+
+  const query = search.trim().toLowerCase();
+  const visibleLeaders = query
+    ? leaders.filter((leader) => leader.email.toLowerCase().includes(query))
+    : leaders;
 
   async function createLeader(e: React.FormEvent) {
     e.preventDefault();
@@ -69,22 +75,50 @@ export default function LeaderAdmin({
       {leaders.length === 0 ? (
         <p className="text-gray-500">No leaders yet.</p>
       ) : (
-        <ul className="divide-y rounded border" data-testid="leader-list">
-          {leaders.map((leader) => (
-            <li
-              key={leader.id}
-              className="flex items-center justify-between px-4 py-3"
+        <>
+          <div className="mb-3 flex gap-2">
+            <input
+              className="flex-1 rounded border px-3 py-2"
+              type="search"
+              placeholder="Search leaders"
+              aria-label="Search leaders"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              data-testid="leader-search"
+            />
+            <button
+              className="rounded border px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 disabled:opacity-50"
+              type="button"
+              onClick={() => setSearch("")}
+              disabled={search === ""}
+              data-testid="leader-search-clear"
             >
-              <span>{leader.email}</span>
-              <button
-                className="rounded border border-red-300 px-3 py-1 text-sm text-red-600 hover:bg-red-50"
-                onClick={() => removeLeader(leader.id)}
-              >
-                Remove
-              </button>
-            </li>
-          ))}
-        </ul>
+              Clear
+            </button>
+          </div>
+          {visibleLeaders.length === 0 ? (
+            <p className="text-gray-500" data-testid="leader-search-empty">
+              No leaders match “{search.trim()}”.
+            </p>
+          ) : (
+            <ul className="divide-y rounded border" data-testid="leader-list">
+              {visibleLeaders.map((leader) => (
+                <li
+                  key={leader.id}
+                  className="flex items-center justify-between px-4 py-3"
+                >
+                  <span>{leader.email}</span>
+                  <button
+                    className="rounded border border-red-300 px-3 py-1 text-sm text-red-600 hover:bg-red-50"
+                    onClick={() => removeLeader(leader.id)}
+                  >
+                    Remove
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </>
       )}
     </div>
   );
