@@ -1,0 +1,25 @@
+{
+  "name": "onboard",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "db:up": "docker compose up -d --wait",
+    "db:down": "docker compose down",
+    "db:reset": "node scripts/reset-db.js",
+    "db:dump": "node scripts/dump-db.js",
+    "dev": "npm run db:up && npm run db:setup && node --watch src/server.js",
+    "start": "node src/server.js",
+    "test:e2e": "npm run db:up && playwright test",
+    "test:e2e:ui": "npm run db:up && playwright test --ui",
+    "db:setup": "node scripts/prepare-db.js"
+  },
+  "dependencies": {
+    "cookie-parser": "^1.4.7",
+    "express": "^5.2.1",
+    "pg": "^8.23.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.63.0"
+  }
+}
