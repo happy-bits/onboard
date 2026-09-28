@@ -1,6 +1,6 @@
 import { defineConfig, devices } from '@playwright/test';
 
-const PORT = 3100;
+const PORT = Number(process.env.TEST_PORT ?? 3100);
 export const TEST_DATABASE_URL =
   process.env.TEST_DATABASE_URL ?? 'postgres://onboard:onboard@localhost:55432/onboard_test';
 
