@@ -1,0 +1,272 @@
+#!/usr/bin/env python3
+"""worklog - track progress on the steps in steps.md and estimate time left."""
+
+import argparse
+import os
+import re
+import sqlite3
+import sys
+from datetime import datetime, timedelta
+
+BASE_DIR = os.path.dirname(os.path.realpath(__file__))
+DB_PATH = os.path.join(BASE_DIR, "worklog-db")
+STEPS_MD = os.path.join(BASE_DIR, "steps.md")
+
+SCHEMA = """
+CREATE TABLE steps (
+    id               TEXT PRIMARY KEY,
+    description      TEXT NOT NULL,
+    estimation       INTEGER NOT NULL,
+    in_original_plan BOOLEAN NOT NULL
+);
+CREATE TABLE "log-progress" (
+    id        INTEGER PRIMARY KEY AUTOINCREMENT,
+    timestamp TEXT NOT NULL,
+    step_id   TEXT NOT NULL REFERENCES steps(id),
+    state     TEXT NOT NULL CHECK (state IN ('start', 'end'))
+);
+"""
+
+
+def fail(msg):
+    print(f"error: {msg}", file=sys.stderr)
+    sys.exit(1)
+
+
+def now():
+    return datetime.now().astimezone().replace(microsecond=0)
+
+
+def parse_steps_md():
+    """Read the (ID, Description, Estimation) rows from the table in steps.md."""
+    rows = []
+    with open(STEPS_MD, encoding="utf-8") as f:
+        for line in f:
+            m = re.match(r"^\|\s*(S\d+)\s*\|\s*(.*?)\s*\|\s*(\d+)\s*\|\s*$", line)
+            if m:
+                rows.append((m.group(1), m.group(2), int(m.group(3))))
+    if not rows:
+        fail(f"no steps found in {STEPS_MD}")
+    return rows
+
+
+def reset_db():
+    if os.path.exists(DB_PATH):
+        os.remove(DB_PATH)
+    conn = sqlite3.connect(DB_PATH)
+    conn.executescript(SCHEMA)
+    conn.executemany(
+        "INSERT INTO steps (id, description, estimation, in_original_plan) VALUES (?, ?, ?, 1)",
+        parse_steps_md(),
+    )
+    conn.commit()
+    return conn
+
+
+def connect():
+    if not os.path.exists(DB_PATH):
+        return reset_db()
+    return sqlite3.connect(DB_PATH)
+
+
+def parse_ts(ts):
+    dt = datetime.fromisoformat(ts)
+    return dt if dt.tzinfo else dt.astimezone()
+
+
+def load(conn):
+    steps = conn.execute(
+        "SELECT id, description, estimation, in_original_plan FROM steps ORDER BY CAST(SUBSTR(id, 2) AS INTEGER), id"
+    ).fetchall()
+    events = [
+        (i, parse_ts(ts), step_id, state)
+        for i, ts, step_id, state in conn.execute(
+            'SELECT id, timestamp, step_id, state FROM "log-progress" ORDER BY timestamp, id'
+        )
+    ]
+    return steps, events
+
+
+def step_status(events):
+    """Fold events into per-step status: worked seconds, open start time, done flag."""
+    status = {}
+    for _, ts, step_id, state in events:
+        s = status.setdefault(step_id, {"worked": 0.0, "open": None, "done": False})
+        if state == "start":
+            s["open"] = ts
+            s["done"] = False
+        elif s["open"] is not None:
+            s["worked"] += (ts - s["open"]).total_seconds()
+            s["open"] = None
+            s["done"] = True
+    return status
+
+
+def estimate_remaining(steps, events, at):
+    """Seconds of work left at time `at`, or None if no step has been completed yet.
+
+    The pace (seconds per estimation point) is measured on completed steps and
+    applied to the points still left. Time already spent on an in-progress step
+    is subtracted from that step's share.
+    """
+    status = step_status(events)
+    done_points = done_secs = 0.0
+    for step_id, _, points, _ in steps:
+        s = status.get(step_id)
+        if s and s["done"]:
+            done_points += points
+            done_secs += s["worked"]
+    if done_points == 0:
+        return None
+    pace = done_secs / done_points
+
+    remaining = 0.0
+    for step_id, _, points, _ in steps:
+        s = status.get(step_id)
+        if s and s["done"]:
+            continue
+        spent = 0.0
+        if s:
+            spent = s["worked"] + ((at - s["open"]).total_seconds() if s["open"] else 0.0)
+        remaining += max(0.0, points * pace - spent)
+    return remaining
+
+
+def fmt_duration(secs):
+    secs = int(round(secs))
+    return f"{secs // 60}m {secs % 60:02d}s"
+
+
+def fmt_clock(dt, ref):
+    return dt.strftime("%H:%M:%S" if dt.date() == ref.date() else "%Y-%m-%d %H:%M:%S")
+
+
+def print_table(headers, rows):
+    rows = [[str(c) for c in r] for r in rows]
+    widths = [max(len(h), *(len(r[i]) for r in rows)) if rows else len(h) for i, h in enumerate(headers)]
+    for r in [headers, ["-" * w for w in widths], *rows]:
+        print("  ".join(c.ljust(w) for c, w in zip(r, widths)).rstrip())
+
+
+def cmd_log(state):
+    def run(args):
+        conn = connect()
+        step_id = args.step_id.upper()
+        if not conn.execute("SELECT 1 FROM steps WHERE id = ?", (step_id,)).fetchone():
+            fail(f"unknown step {step_id}")
+        _, events = load(conn)
+        s = step_status(events).get(step_id)
+        is_open = bool(s and s["open"])
+        if state == "start" and is_open:
+            fail(f"{step_id} is already started")
+        if state == "end" and not is_open:
+            fail(f"{step_id} is not started")
+        ts = now()
+        conn.execute(
+            'INSERT INTO "log-progress" (timestamp, step_id, state) VALUES (?, ?, ?)',
+            (ts.isoformat(), step_id, state),
+        )
+        conn.commit()
+        print(f"{state} {step_id} at {ts.strftime('%H:%M:%S')}")
+
+    return run
+
+
+def cmd_log_list(args):
+    _, events = load(connect())
+    print_table(
+        ["id", "timestamp", "step_id", "state"],
+        [(i, ts.strftime("%Y-%m-%d %H:%M:%S"), step_id, state) for i, ts, step_id, state in events],
+    )
+
+
+def cmd_steps_list(args):
+    steps, events = load(connect())
+    status = step_status(events)
+
+    def label(step_id):
+        s = status.get(step_id)
+        if not s:
+            return "todo"
+        return "in progress" if s["open"] else "done"
+
+    print_table(
+        ["id", "estimation", "original", "status", "description"],
+        [(i, e, "yes" if o else "no", label(i), d) for i, d, e, o in steps],
+    )
+
+
+def cmd_steps_add(args):
+    conn = connect()
+    step_id = args.step_id.upper()
+    if conn.execute("SELECT 1 FROM steps WHERE id = ?", (step_id,)).fetchone():
+        fail(f"step {step_id} already exists")
+    mean = conn.execute("SELECT AVG(estimation) FROM steps").fetchone()[0] or 0
+    estimation = int(round(mean))
+    conn.execute(
+        "INSERT INTO steps (id, description, estimation, in_original_plan) VALUES (?, ?, ?, 0)",
+        (step_id, args.description, estimation),
+    )
+    conn.commit()
+    print(f"added {step_id} with estimation {estimation}")
+
+
+def cmd_estimate(args):
+    steps, events = load(connect())
+    at = now()
+    remaining = estimate_remaining(steps, events, at)
+    if remaining is None:
+        print("No completed steps yet - finish at least one step to get an estimate.")
+        return
+    print(f"Time left:  {fmt_duration(remaining)}")
+    print(f"Done at:    {fmt_clock(at + timedelta(seconds=remaining), at)}")
+
+
+def cmd_estimate_history(args):
+    steps, events = load(connect())
+    rows = []
+    for n, (_, ts, _, state) in enumerate(events):
+        if state != "end":
+            continue
+        remaining = estimate_remaining(steps, events[: n + 1], ts)
+        if remaining is not None:
+            rows.append((ts.strftime("%Y-%m-%d %H:%M:%S"), (ts + timedelta(seconds=remaining)).strftime("%Y-%m-%d %H:%M:%S")))
+    print_table(["timestamp", "estimated clocktime"], rows)
+
+
+def cmd_reset(args):
+    reset_db().close()
+    print(f"reset {os.path.basename(DB_PATH)} from {os.path.basename(STEPS_MD)}")
+
+
+def main():
+    parser = argparse.ArgumentParser(prog="worklog", description=__doc__)
+    sub = parser.add_subparsers(dest="command", required=True)
+
+    for state in ("start", "end"):
+        p = sub.add_parser(state, help=f"log {state} of a step")
+        p.add_argument("step_id")
+        p.set_defaults(func=cmd_log(state))
+
+    p = sub.add_parser("log-progress", help="show the progress log")
+    lp = p.add_subparsers(dest="action", required=True)
+    lp.add_parser("list").set_defaults(func=cmd_log_list)
+
+    p = sub.add_parser("steps", help="list or add steps")
+    sp = p.add_subparsers(dest="action", required=True)
+    sp.add_parser("list").set_defaults(func=cmd_steps_list)
+    add = sp.add_parser("add")
+    add.add_argument("step_id")
+    add.add_argument("description")
+    add.set_defaults(func=cmd_steps_add)
+
+    sub.add_parser("estimate", help="estimate time left").set_defaults(func=cmd_estimate)
+    sub.add_parser("estimate-history", help="estimate after each completed step").set_defaults(func=cmd_estimate_history)
+    sub.add_parser("reset", help="reset the database to the original plan").set_defaults(func=cmd_reset)
+
+    args = parser.parse_args()
+    args.func(args)
+
+
+if __name__ == "__main__":
+    main()
