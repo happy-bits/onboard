@@ -55,18 +55,19 @@ test("leader invites members and follows onboarding progress", async ({
     memberPage.getByRole("heading", { name: "Your onboarding" })
   ).toBeVisible();
   await expect(memberPage.getByTestId("onboarding-summary")).toHaveText(
-    "0/3 steps completed"
+    "0/4 steps completed"
   );
 
   // The leader sees the new member appear (via SSE, no reload).
   const progress = leaderPage.getByTestId("progress-member1@onboard.local");
-  await expect(progress).toHaveText("0/3");
+  await expect(progress).toHaveText("0/4");
 
   // The member checks the boxes one by one; the leader sees each update.
   for (const [step, expected] of [
-    ["step1", "1/3"],
-    ["step2", "2/3"],
-    ["step3", "3/3"],
+    ["step1", "1/4"],
+    ["step2", "2/4"],
+    ["step3", "3/4"],
+    ["step4", "4/4"],
   ] as const) {
     await memberPage.getByTestId(`checkbox-${step}`).check();
     await expect(progress).toHaveText(expected);
@@ -123,7 +124,7 @@ test("leader invites members and follows onboarding progress", async ({
       },
     ],
     onboardingProgress: [
-      { id: 1, userId: 3, step1: true, step2: true, step3: true },
+      { id: 1, userId: 3, step1: true, step2: true, step3: true, step4: true },
     ],
     sessions: [
       { id: 1, token: "session-token-1", userId: 2 },

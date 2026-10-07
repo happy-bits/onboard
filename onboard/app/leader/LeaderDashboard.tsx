@@ -3,13 +3,18 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
-type Progress = { step1: boolean; step2: boolean; step3: boolean } | null;
+type Progress = {
+  step1: boolean;
+  step2: boolean;
+  step3: boolean;
+  step4: boolean;
+} | null;
 type Member = { id: number; email: string; progress: Progress };
 type Invitation = { id: number; email: string; used: boolean };
 
 function progressLabel(p: Progress): string {
-  if (!p) return "0/3";
-  return `${[p.step1, p.step2, p.step3].filter(Boolean).length}/3`;
+  if (!p) return "0/4";
+  return `${[p.step1, p.step2, p.step3, p.step4].filter(Boolean).length}/4`;
 }
 
 export default function LeaderDashboard({

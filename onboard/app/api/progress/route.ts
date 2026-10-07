@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { currentUser } from "@/lib/auth";
 
-const STEPS = ["step1", "step2", "step3"] as const;
+const STEPS = ["step1", "step2", "step3", "step4"] as const;
 
 export async function POST(req: Request) {
   const user = await currentUser();

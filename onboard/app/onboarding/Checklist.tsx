@@ -6,6 +6,7 @@ const STEPS = [
   { key: "step1", label: "Read the employee handbook" },
   { key: "step2", label: "Set up your development environment" },
   { key: "step3", label: "Meet your team" },
+  { key: "step4", label: "Complete your first task" },
 ] as const;
 
 type StepKey = (typeof STEPS)[number]["key"];
@@ -28,7 +29,7 @@ export default function Checklist({ initial }: { initial: Progress }) {
   return (
     <div>
       <p className="mb-4 text-gray-600" data-testid="onboarding-summary">
-        {done}/3 steps completed
+        {done}/{STEPS.length} steps completed
       </p>
       <ul className="flex flex-col gap-3">
         {STEPS.map((step) => (

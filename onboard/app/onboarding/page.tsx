@@ -26,6 +26,7 @@ export default async function OnboardingPage() {
           step1: progress?.step1 ?? false,
           step2: progress?.step2 ?? false,
           step3: progress?.step3 ?? false,
+          step4: progress?.step4 ?? false,
         }}
       />
     </main>

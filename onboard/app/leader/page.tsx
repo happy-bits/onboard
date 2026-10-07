@@ -38,6 +38,7 @@ export default async function LeaderPage() {
             step1: m.progress.step1,
             step2: m.progress.step2,
             step3: m.progress.step3,
+            step4: m.progress.step4,
           },
         }))}
         invitations={team.invitations.map((i) => ({

@@ -29,7 +29,7 @@ Postgres installations already using 5432/5433.
   team, its members, invitations and progress.
 - **Leader** (`/leader`) — invite Members by email and watch their onboarding
   progress update live over SSE.
-- **Member** (`/onboarding`) — three hardcoded onboarding checkboxes.
+- **Member** (`/onboarding`) — four hardcoded onboarding checkboxes.
 
 Invitations are single-use and expire after 24 hours. Re-inviting the same email
 replaces any pending invitation for that team.

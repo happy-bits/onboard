@@ -51,6 +51,7 @@ model OnboardingProgress {
   step1  Boolean @default(false)
   step2  Boolean @default(false)
   step3  Boolean @default(false)
+  step4  Boolean @default(false)
 }
 
 model Session {

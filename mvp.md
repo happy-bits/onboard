@@ -43,7 +43,7 @@ All users must log in to use the system.
 ### Member
 
 - Follows the invitation link in the email, creates an account (sets a password), and then belongs to the inviting Leader's team.
-- When logged in, sees the onboarding page: **three hardcoded checkboxes**.
+- When logged in, sees the onboarding page: **four hardcoded checkboxes**.
 - Checking checkboxes records progress, which the Leader can see.
 
 ## Invitations
@@ -101,7 +101,7 @@ All seed data is identical every time — no random numbers, no current time.
 
 1. Start with a database containing one Superadmin and one Leader.
 2. Log in as the Leader and invite two people.
-3. One invitee follows the invitation link (read from the dev inbox), creates an account, and sees the onboarding page with the three checkboxes.
+3. One invitee follows the invitation link (read from the dev inbox), creates an account, and sees the onboarding page with the four checkboxes.
 4. The Member checks the boxes one by one, and the Leader sees the progress update (via SSE).
 5. Verify the database via the JSON dump.
 
@@ -115,5 +115,5 @@ These were open questions; resolved as follows while building:
 
 - **Docker scope:** only Postgres runs in Docker. The Next.js app and Playwright run locally against it. Postgres is published on host port **5434**, because 5432 and 5433 were already taken by local Postgres installations on the dev machine.
 - **Re-invite behavior:** re-inviting the same email replaces (deletes) any pending invitation for that team and sends a new one. Inviting an email that already has an account is rejected. A Member belongs to exactly one team.
-- **Role views:** minimal. The Superadmin manages Leaders only. The Leader sees their invitations (pending/accepted) and each Member's progress as a count (e.g. `2/3`). The Member sees only their own checklist.
+- **Role views:** minimal. The Superadmin manages Leaders only. The Leader sees their invitations (pending/accepted) and each Member's progress as a count (e.g. `2/4`). The Member sees only their own checklist.
 - **Teams:** an explicit `Team` entity, auto-created when the Superadmin creates a Leader, named deterministically as `Team <leader email>`. There is no team-management UI.
