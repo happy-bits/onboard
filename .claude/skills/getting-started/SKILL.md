@@ -21,6 +21,7 @@ Give the user a guided, educational walkthrough of how to run and use the onboar
    npm run dev                 # 4. Eite running               ✅ already running
    ```
 
+   - Optionally add the E2E test setup (only if the report's `E2E` category shows it is needed): `npx playwright install chromium` (first time only), then `npm run test:e2e`. Mention that tests truncate and reseed the dev database, and that a manually started dev server must have `TEST_MODE=1` (or be stopped so Playwright starts its own).
    - Use `npm run seed superadmin+leader` instead of step 3 to also get a Leader.
 
 3. **Show how to use the app**, with the seeded credentials:
@@ -39,7 +40,7 @@ Give the user a guided, educational walkthrough of how to run and use the onboar
    2. Enter `admin@onboard.local` / `admin123` from the table above and click **Log in**.
    3. You land on `/superadmin`: a **"Superadmin"** page with a Logout button, a **"Create leader"** form (Email, Password, **Create**) and a **"Leaders"** list (empty: "No leaders yet.", or listing existing leaders with a **Remove** button).
 
-   If troubleshoot reports blockers, say the walkthrough will not work until they are fixed and offer to fix them afterwards. Do not add other sections (no architecture overview, no list of next steps).
+   If troubleshoot reports blockers, say the walkthrough will not work until they are fixed and offer to fix them afterwards. State in one line whether the app is ready to run the E2E tests, based on the `E2E` category. Do not add other sections (no architecture overview, no list of next steps).
 
 ## Notes
 

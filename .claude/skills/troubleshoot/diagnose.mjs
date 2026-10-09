@@ -171,15 +171,33 @@ if (dbPortOpen && dbUrl && existsSync(path.join(app, "node_modules/pg"))) {
   add("Database", "connect", "fail", "Database checks skipped", !dbPortOpen ? `Port ${dbPort} not reachable` : !dbUrl ? "No DATABASE_URL" : "pg module missing (npm install)");
 }
 
-// ---- Playwright (only matters for E2E) ----
+// ---- E2E tests (Playwright) ----
+const pkg = existsSync(path.join(app, "package.json")) ? JSON.parse(readFileSync(path.join(app, "package.json"), "utf8")) : {};
+pkg.scripts?.["test:e2e"]
+  ? add("E2E", "script", "ok", "npm run test:e2e is defined")
+  : add("E2E", "script", "fail", "test:e2e script missing in package.json", "", 'Add "test:e2e": "playwright test" to onboard/package.json');
+existsSync(path.join(app, "playwright.config.ts"))
+  ? add("E2E", "config", "ok", "playwright.config.ts exists")
+  : add("E2E", "config", "fail", "playwright.config.ts missing");
+const specs = existsSync(path.join(app, "tests")) ? readdirSync(path.join(app, "tests")).filter((f) => f.endsWith(".spec.ts")) : [];
+specs.length
+  ? add("E2E", "specs", "ok", `${specs.length} spec file(s) found`, specs.join(", "))
+  : add("E2E", "specs", "fail", "No *.spec.ts files in onboard/tests");
 const pw = run("npx", ["--no-install", "playwright", "--version"], { cwd: app });
-if (pw.ok) {
-  const cache = [path.join(process.env.HOME || "", "Library/Caches/ms-playwright"), path.join(process.env.HOME || "", ".cache/ms-playwright")];
+if (!pw.ok) {
+  add("E2E", "playwright", "fail", "@playwright/test not installed", pw.out.split("\n")[0], "cd onboard && npm install");
+} else {
+  add("E2E", "playwright", "ok", pw.out);
+  const cache = [process.env.PLAYWRIGHT_BROWSERS_PATH, path.join(process.env.HOME || "", "Library/Caches/ms-playwright"), path.join(process.env.HOME || "", ".cache/ms-playwright")].filter(Boolean);
   const hasChromium = cache.some((d) => existsSync(d) && readdirSync(d).some((n) => n.startsWith("chromium")));
   hasChromium
     ? add("E2E", "chromium", "ok", "Playwright Chromium installed")
-    : add("E2E", "chromium", "warn", "Playwright Chromium not found", "Only needed for npm run test:e2e", "cd onboard && npx playwright install chromium");
+    : add("E2E", "chromium", "fail", "Playwright Chromium not found", "Needed for npm run test:e2e", "cd onboard && npx playwright install chromium");
 }
+if (devServer === "onboard" && testMode === false) {
+  add("E2E", "server-mode", "warn", "Running dev server is NOT in TEST_MODE", "Playwright reuses an existing server on :3000, so the deterministic E2E tests would fail", "Stop it and let Playwright start its own, or restart with TEST_MODE=1 npm run dev");
+}
+add("E2E", "db-wipe", "ok", "Note: E2E tests truncate and reseed the shared database", "npm run test:e2e wipes all data in the dev database");
 
 const summary = { ok: 0, warn: 0, fail: 0 };
 for (const c of checks) summary[c.status]++;
