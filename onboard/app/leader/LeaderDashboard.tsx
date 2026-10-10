@@ -58,6 +58,18 @@ export default function LeaderDashboard({
     }
   }
 
+  async function cancel(id: number) {
+    setError("");
+    setSent("");
+    const res = await fetch(`/api/invitations/${id}`, { method: "DELETE" });
+    if (res.ok) {
+      router.refresh();
+    } else {
+      const data = await res.json();
+      setError(data.error ?? "Failed to cancel invitation");
+    }
+  }
+
   return (
     <div>
       <h2 className="mb-3 text-lg font-semibold">Invite a member</h2>
@@ -91,8 +103,18 @@ export default function LeaderDashboard({
               className="flex items-center justify-between px-4 py-3"
             >
               <span>{inv.email}</span>
-              <span className="text-sm text-gray-500">
+              <span className="flex items-center gap-3 text-sm text-gray-500">
                 {inv.used ? "Accepted" : "Pending"}
+                {!inv.used && (
+                  <button
+                    className="text-red-600 hover:underline"
+                    type="button"
+                    data-testid={`cancel-${inv.email}`}
+                    onClick={() => cancel(inv.id)}
+                  >
+                    Cancel
+                  </button>
+                )}
               </span>
             </li>
           ))}
