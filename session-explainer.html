@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Anatomy of a Claude Session</title>
+<style>
+:root{
+  --bg:#f6f7fb; --card:#fff; --ink:#1b1f2a; --muted:#5b6475; --line:#dfe3ec;
+  --accent:#3b5bdb; --accent-soft:#e7ecff; --pink:#d6336c; --green:#2b8a3e; --amber:#e8890c;
+  --code-bg:#0f1420; --code-ink:#d7deef; --k:#8fb4ff; --s:#a6e3a1; --n:#ffc27a; --b:#f38ba8; --lnk:#f9e2af;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0e1118; --card:#171b26; --ink:#e8ebf3; --muted:#9aa4b8; --line:#2a3042;
+    --accent:#8fa8ff; --accent-soft:#222b4d; --pink:#ff7aa8; --green:#6fd48a; --amber:#ffb454;
+    --code-bg:#0a0d14;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0e1118; --card:#171b26; --ink:#e8ebf3; --muted:#9aa4b8; --line:#2a3042;
+  --accent:#8fa8ff; --accent-soft:#222b4d; --pink:#ff7aa8; --green:#6fd48a; --amber:#ffb454;
+  --code-bg:#0a0d14;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.wrap{max-width:1080px;margin:0 auto;padding:0 16px 80px}
+header{padding:48px 0 24px}
+header .eyebrow{color:var(--accent);font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-size:.8rem}
+h1{font-size:clamp(2rem,5vw,3rem);line-height:1.1;margin:.3em 0}
+h2{font-size:1.6rem;margin:2.2em 0 .4em}
+h3{margin:0 0 .3em;font-size:1.05rem}
+p{margin:.4em 0 1em}
+.lead{color:var(--muted);font-size:1.15rem;max-width:720px}
+code,.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.88em}
+p code,li code,h3 code{background:var(--accent-soft);padding:.1em .4em;border-radius:5px}
+.theme{position:fixed;top:12px;right:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:6px 12px;cursor:pointer;z-index:10}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;counter-reset:s;padding:0;list-style:none}
+.steps li{counter-increment:s;position:relative}
+.steps li::before{content:counter(s);position:absolute;top:-12px;left:16px;background:var(--accent);color:#fff;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-weight:700}
+.quote{border-left:4px solid var(--accent);background:var(--accent-soft);padding:12px 16px;border-radius:0 10px 10px 0;font-style:italic}
+.answer{border-left:4px solid var(--green);background:var(--card);border:1px solid var(--line);border-left-width:4px;border-left-color:var(--green);padding:12px 16px;border-radius:0 10px 10px 0}
+
+/* explorer */
+.explorer{display:grid;grid-template-columns:340px 1fr;gap:14px;align-items:start}
+@media(max-width:820px){.explorer{grid-template-columns:1fr}}
+.list{display:flex;flex-direction:column;gap:6px;max-height:620px;overflow:auto;padding:2px}
+.rec{all:unset;box-sizing:border-box;cursor:pointer;display:grid;grid-template-columns:30px 1fr;gap:8px;padding:9px 10px;border:1px solid var(--line);border-radius:10px;background:var(--card)}
+.rec:hover{border-color:var(--accent)}
+.rec:focus-visible{outline:2px solid var(--accent)}
+.rec.sel{background:var(--accent-soft);border-color:var(--accent)}
+.rec.rel{box-shadow:inset 0 0 0 2px var(--amber)}
+.rec .ln{color:var(--muted);font-family:ui-monospace,Menlo,monospace;font-size:.8rem;padding-top:2px}
+.rec b{display:block;font-size:.92rem;line-height:1.3}
+.rec small{color:var(--muted);display:block;line-height:1.3}
+.tag{display:inline-block;font-size:.68rem;font-weight:700;padding:1px 7px;border-radius:999px;margin-right:6px;vertical-align:1px;color:#fff}
+.t-user{background:var(--accent)} .t-attach{background:var(--amber)} .t-meta{background:#7a8499} .t-asst{background:var(--green)}
+.panel{min-width:0}
+.panel .explain{margin:0 0 12px}
+.nav{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;align-items:center}
+.btn{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:8px;padding:5px 11px;cursor:pointer;font:inherit;font-size:.88rem}
+.btn:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+.btn:disabled{opacity:.4;cursor:default}
+pre.json{margin:0;background:var(--code-bg);color:var(--code-ink);padding:14px;border-radius:12px;overflow:auto;max-height:520px;font-size:.82rem;line-height:1.5}
+.json .k{color:var(--k)} .json .s{color:var(--s)} .json .n{color:var(--n)} .json .b{color:var(--b)}
+.json a{color:var(--lnk);text-decoration:underline dotted;cursor:pointer}
+.hint{color:var(--muted);font-size:.85rem;margin-top:8px}
+
+/* chain */
+.chain{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:14px 0}
+.node{all:unset;cursor:pointer;box-sizing:border-box;border:1px solid var(--line);background:var(--card);padding:8px 12px;border-radius:10px;font-size:.85rem;text-align:center;line-height:1.3}
+.node:hover,.node.sel{border-color:var(--accent);background:var(--accent-soft)}
+.node:focus-visible{outline:2px solid var(--accent)}
+.node small{display:block;color:var(--muted);font-family:ui-monospace,Menlo,monospace}
+.arrow{color:var(--muted);font-size:.8rem;text-align:center}
+.side{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;align-items:center;font-size:.85rem;color:var(--muted)}
+.side span.pill{border:1px dashed var(--line);border-radius:999px;padding:2px 10px}
+
+/* tokens */
+.bar{display:flex;height:46px;border-radius:10px;overflow:hidden;border:1px solid var(--line);margin:14px 0 8px}
+.bar div{display:grid;place-items:center;color:#fff;font-size:.78rem;font-weight:700;min-width:3px}
+.seg-read{background:var(--green)} .seg-write{background:var(--amber)} .seg-fresh{background:var(--pink)}
+.legend{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.legend .card{padding:12px 14px}
+.legend .num{font-size:1.5rem;font-weight:800;line-height:1.1}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px}
+
+/* models */
+.models{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:center}
+@media(max-width:700px){.models{grid-template-columns:1fr}.models .mid{transform:rotate(90deg);justify-self:center}}
+.models .mid{font-size:1.6rem;color:var(--muted);text-align:center}
+.pillrow{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.82rem;background:var(--card)}
+.chip.proj{border-color:var(--accent);background:var(--accent-soft)}
+.chip.ql{border-color:var(--pink)}
+.chip.sv{border-color:var(--pink);background:color-mix(in srgb,var(--pink) 12%,transparent)}
+footer{color:var(--muted);font-size:.85rem;margin-top:60px;border-top:1px solid var(--line);padding-top:16px}
+</style>
+</head>
+<body>
+<button class="theme" id="theme" aria-label="Toggle theme">◐ Theme</button>
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">Claude Code · session log explained</div>
+  <h1>Anatomy of a Claude session</h1>
+  <p class="lead">One short question, one short answer, and the eleven JSON lines Claude Code wrote down while it happened. Click through the real records below.</p>
+</header>
+
+<section>
+  <h2>What happened, in simple terms</h2>
+  <p>Claude Code saves every session as a <code>.jsonl</code> file: a text file where each line is one JSON record. This one captures a single exchange.</p>
+  <ol class="steps">
+    <li class="card"><h3>You asked</h3><p>In the terminal, in the <code>onboard</code> project on branch <code>teacher-cc-course</code>, you typed your 8th prompt of the session.</p><div class="quote">“in which folder are all my sessions stored for this project?”</div></li>
+    <li class="card"><h3>The harness added context</h3><p>Before the model read your question, Claude Code quietly attached three notes: three newly available tools, the list of 58 skills, and a token-budget reminder.</p></li>
+    <li class="card"><h3>Bookkeeping lines</h3><p>Several small records were written: the last prompt, the session title (<em>My session</em>), an AI-generated title, the agent name, the mode and a latch flag.</p></li>
+    <li class="card"><h3>Claude answered</h3><p>About 3 seconds later it replied with the folder path, and noted that this very session is one of the files in it.</p><div class="answer mono" style="font-size:.78rem">/Users/oscar/.claude/projects/-Users-oscar-Projects-onboard/</div></li>
+  </ol>
+  <p>Fun twist: the answer describes the file the answer is stored in. The session is <code>80d3006e-1c5b-4b64-be07-971a29244f5c.jsonl</code>, and the folder name is just the project path with every <code>/</code> swapped for <code>-</code>.</p>
+</section>
+
+<section>
+  <h2>Explore the JSONL</h2>
+  <p>Pick a line on the left. The JSON on the right is the real record, with very long fields trimmed so it stays readable. Use <kbd>↑</kbd>/<kbd>↓</kbd> to step through lines, and click any <a href="#" style="color:var(--amber)" onclick="return false">highlighted UUID</a> to jump to the record it points at.</p>
+  <div class="explorer">
+    <div class="list" id="list" role="listbox" aria-label="JSONL records"></div>
+    <div class="panel card">
+      <div class="nav">
+        <button class="btn" id="prev">← Parent</button>
+        <button class="btn" id="next">Child →</button>
+        <span class="chip" id="meta"></span>
+      </div>
+      <p class="explain" id="explain"></p>
+      <pre class="json" id="json" tabindex="0"></pre>
+      <div class="hint" id="hint"></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Detail 1 · The records form a linked list</h2>
+  <p>Each line has a <code>parentUuid</code> pointing to the one before it, so the conversation can be replayed in order — and <strong>branched</strong>, because two records can share the same parent. Click a node to inspect it.</p>
+  <div class="card">
+    <div class="chain" id="chain"></div>
+    <div class="side"><strong>Not in the chain:</strong>
+      <span class="pill">last-prompt</span><span class="pill">custom-title</span><span class="pill">ai-title</span><span class="pill">agent-name</span><span class="pill">mode</span><span class="pill">atis-latch</span>
+      <span>— metadata lines carry only a <code>sessionId</code>.</span>
+    </div>
+    <p class="hint">Your prompt’s parent, <code>9ced3c84…</code>, lives earlier in the session and isn’t in this excerpt — that’s the link back to prompts 1–7.</p>
+  </div>
+</section>
+
+<section>
+  <h2>Detail 2 · Two models are involved</h2>
+  <div class="card">
+    <div class="models">
+      <div><h3>✍️ Writer</h3><p><code>claude-sonnet-5-5</code> produced the reply you see.</p></div>
+      <div class="mid">⇄</div>
+      <div><h3>🧭 Advisor</h3><p><code>claude-opus-5-5</code> is configured as a stronger reviewer the writer can consult.</p></div>
+    </div>
+    <p class="hint">Both appear on the assistant line: <code>"requestedModel": "claude-sonnet-5-5"</code> and <code>"advisorModel": "claude-opus-5-5"</code>, with <code>"effort": "medium"</code>. For a one-line factual answer there was no need to actually call the advisor.</p>
+  </div>
+</section>
+
+<section>
+  <h2>Detail 3 · Prompt caching did most of the work</h2>
+  <p>Only <strong>2</strong> input tokens were billed at the full rate. The rest of the conversation — skills, tools, project instructions, earlier turns — was already in Anthropic’s cache. Hover or tap the bar for numbers.</p>
+  <div class="bar" id="bar" role="img" aria-label="Input token split: 59,728 read from cache, 9,809 newly cached, 2 fresh"></div>
+  <div class="legend">
+    <div class="card"><span class="dot seg-read"></span>Read from cache<div class="num">59,728</div><small>Reused, cheap</small></div>
+    <div class="card"><span class="dot seg-write"></span>Newly cached (1 h)<div class="num">9,809</div><small>Stored for next turn</small></div>
+    <div class="card"><span class="dot seg-fresh"></span>Fresh input<div class="num">2</div><small>Full-price tokens</small></div>
+    <div class="card"><span class="dot" style="background:var(--accent)"></span>Reply (output)<div class="num">153</div><small>The answer itself</small></div>
+  </div>
+  <p class="hint" id="pct"></p>
+</section>
+
+<section>
+  <h2>Detail 4 · The skill list shows your setup</h2>
+  <p>Claude Code listed 58 skills. Besides your project skills, it includes Swedish-language QueensLab skills for brand, decks and WaaS web-project phases. That suggests you work at an agency, and the <code>teacher-cc-course</code> branch name suggests this repo is used to teach Claude Code.</p>
+  <div class="card">
+    <h3>Project skills</h3>
+    <div class="pillrow" style="margin-bottom:14px">
+      <span class="chip proj">getting-started</span><span class="chip proj">troubleshoot</span><span class="chip proj">claude-code-help</span>
+    </div>
+    <h3>QueensLab · Swedish-language</h3>
+    <div class="pillrow" style="margin-bottom:14px">
+      <span class="chip sv">queenslab-brand</span><span class="chip sv">queenslab-pptx</span><span class="chip sv">waas-offert</span><span class="chip sv">waas-process</span><span class="chip sv">waas-research</span><span class="chip sv">waas-struktur</span><span class="chip sv">waas-design</span><span class="chip sv">waas-webflow</span><span class="chip sv">waas-lansering</span><span class="chip sv">pdf-merge</span>
+    </div>
+    <h3>Everything else (a sample)</h3>
+    <div class="pillrow">
+      <span class="chip">code-review</span><span class="chip">simplify</span><span class="chip">loop</span><span class="chip">schedule</span><span class="chip">claude-api</span><span class="chip">pdf</span><span class="chip">docx</span><span class="chip">xlsx</span><span class="chip">pptx</span><span class="chip">mattpocock-skills:tdd</span><span class="chip">mattpocock-skills:grilling</span><span class="chip">… and more</span>
+    </div>
+  </div>
+</section>
+
+<footer>Built from a pasted Claude Code session transcript (Claude Code v2.1.296, 2026-10-10). Long fields in the explorer are trimmed; everything else is verbatim.</footer>
+</div>
+
+<script>
+(function(){
+var SID='80d3006e-1c5b-4b64-be07-971a29244f5c';
+var ctx={userType:'external',entrypoint:'cli',cwd:'/Users/oscar/Projects/onboard',sessionId:SID,version:'2.1.296',gitBranch:'teacher-cc-course',slug:'groovy-prancing-knuth'};
+function withCtx(o){var r={};for(var k in o)r[k]=o[k];for(var c in ctx)r[c]=ctx[c];return r;}
+var U='44c635ef-faa1-4edf-9d7d-1cf0367b7f9c',D='c50bfcff-c4ff-4b06-931c-a8f513f4408d',S='8e30be23-895f-43e3-8527-f402e54cbe00',T='440c7e86-fc92-4c8b-aa5e-677a8c3ff9fe',A='a57f3c49-da75-4d95-8878-d747b5254fa2';
+
+var R=[
+{type:'user',tag:'USER',title:'Your prompt',sub:'“in which folder are all my sessions…”',uuid:U,parent:'9ced3c84-cf9a-43e3-9f1b-2d7b70e1b948',
+ explain:'The line you typed. Note parentUuid: it points to the previous record from earlier in the session (not in this excerpt). promptIndex 7 means this was your 8th prompt; permissionMode "auto" and entrypoint "cli" say how it was sent.',
+ json:withCtx({parentUuid:'9ced3c84-cf9a-43e3-9f1b-2d7b70e1b948',isSidechain:false,promptId:'4ae6efbb-cfbd-4d83-b101-7cf7a9d3b561',type:'user',message:{role:'user',content:'in which folder are all my sessions stored for this project?'},uuid:U,timestamp:'2026-10-10T09:44:10.696Z',permissionMode:'auto',origin:{kind:'human'},promptSource:'typed',turnOrigin:'human',turnPosition:{promptIndex:7,turnIndex:7}})},
+
+{type:'attachment',tag:'ATTACH',title:'New tools announced',sub:'deferred_tools_delta · 3 Claude Docs tools',uuid:D,parent:U,
+ explain:'Claude Code noticed three MCP tools (batch, guide, update from Claude Docs) had become available and attached a note. Their full schemas are "deferred": only names are shown to the model until it asks for them. Definitions are trimmed here.',
+ json:withCtx({parentUuid:U,isSidechain:false,attachment:{type:'deferred_tools_delta',addedNames:['mcp__claude_ai_Claude_Docs__batch','mcp__claude_ai_Claude_Docs__guide','mcp__claude_ai_Claude_Docs__update'],removedNames:[],pendingMcpServers:[],failedMcpServers:[],surfacedDefinitions:'…3 tool definitions with input_schema (trimmed)…'},type:'attachment',uuid:D,timestamp:'2026-10-10T09:44:10.695Z',rendered:[{content:'<system-reminder>\nThe following tools just became available and are ready to use:\nmcp__claude_ai_Claude_Docs__batch\n…'}],renderedRole:'system'})},
+
+{type:'attachment',tag:'ATTACH',title:'Skill listing',sub:'skill_listing · 58 skills',uuid:S,parent:D,
+ explain:'The full catalogue of 58 skills with one-line descriptions, injected as a system reminder. This is the biggest chunk of the context — and the reason prompt caching matters so much. Content trimmed to a few entries.',
+ json:withCtx({parentUuid:D,isSidechain:false,attachment:{type:'skill_listing',content:'- subtitles: Download subtitles (.srt) for a movie or TV series…\n- summarize: Uses this tool to summarize web pages…\n- claude-code-help: Answer a question about Claude Code…\n- getting-started: Explain how to start and use the onboard app…\n- troubleshoot: Diagnose why the onboard app won\'t run…\n… (≈58 entries, trimmed)',skillCount:58,isInitial:true,names:['subtitles','summarize','claude-code-help','getting-started','troubleshoot','…','anthropic-skills:queenslab-brand','anthropic-skills:waas-webflow','anthropic-skills:xlsx']},type:'attachment',uuid:S,timestamp:'2026-10-10T09:44:10.695Z',rendered:[{content:'<system-reminder>\nThe following skills are available for use with the Skill tool:\n…'}],renderedRole:'system'})},
+
+{type:'attachment',tag:'ATTACH',title:'Token budget reminder',sub:'total_tokens_reminder · 15,000,000',uuid:T,parent:S,
+ explain:'A tiny note telling the model how much budget remains. It is the last link before the assistant’s reply — the assistant record’s parentUuid points here.',
+ json:withCtx({parentUuid:S,isSidechain:false,attachment:{type:'total_tokens_reminder',text:'<total_tokens>15000000 tokens left</total_tokens>'},type:'attachment',uuid:T,timestamp:'2026-10-10T09:44:10.695Z',rendered:[{content:'<system-reminder>\n<total_tokens>15000000 tokens left</total_tokens>\n</system-reminder>'}],renderedRole:'system'})},
+
+{type:'last-prompt',tag:'META',title:'last-prompt',sub:'remembers the prompt + leaf record',
+ explain:'Bookkeeping: stores the latest prompt text and a leafUuid pointing to the end of the chain so far. Handy for session pickers and resuming. No parentUuid — metadata lines are not part of the linked list.',
+ json:{type:'last-prompt',lastPrompt:'in which folder are all my sessions stored for this project?',leafUuid:T,sessionId:SID}},
+
+{type:'custom-title',tag:'META',title:'custom-title',sub:'“My session”',
+ explain:'A title you set yourself (for example with /rename).',json:{type:'custom-title',customTitle:'My session',sessionId:SID}},
+
+{type:'ai-title',tag:'META',title:'ai-title',sub:'“Superadmin, Leader and Member flows in mvp.md”',
+ explain:'A title Claude generated by summarizing the session. It reflects earlier work on the app’s three roles in mvp.md, not this question.',json:{type:'ai-title',aiTitle:'Superadmin, Leader and Member flows in mvp.md',sessionId:SID}},
+
+{type:'agent-name',tag:'META',title:'agent-name',sub:'“My session”',
+ explain:'The display name of the agent/session, here mirroring the custom title.',json:{type:'agent-name',agentName:'My session',sessionId:SID}},
+
+{type:'mode',tag:'META',title:'mode',sub:'normal',
+ explain:'The session mode when the turn ran (“normal” as opposed to e.g. plan mode).',json:{type:'mode',mode:'normal',sessionId:SID}},
+
+{type:'atis-latch',tag:'META',title:'atis-latch',sub:'internal flag (empty)',
+ explain:'An internal latch value that is empty here. Its purpose isn’t documented in this transcript, so treat it as an implementation detail.',json:{type:'atis-latch',atis:'',sessionId:SID}},
+
+{type:'assistant',tag:'CLAUDE',title:'Claude’s answer',sub:'claude-sonnet-5-5 · 153 output tokens',uuid:A,parent:T,
+ explain:'The reply. Look at the usage block: 2 fresh input tokens, 59,728 read from cache, 9,809 written to the 1-hour cache, 153 output. Also note requestedModel (sonnet) vs advisorModel (opus), and a timestamp 2.4 s after your prompt.',
+ json:withCtx({parentUuid:T,isSidechain:false,message:{model:'claude-sonnet-5-5',id:'msg_011CftLi9UAXsisPzjdyKugB',type:'message',role:'assistant',content:[{type:'text',text:'Your sessions for this project are stored in:\n\n```\n/Users/oscar/.claude/projects/-Users-oscar-Projects-onboard/\n```\n\nEach session is one `<session-id>.jsonl` file. The folder name is the project path with `/` replaced by `-`. This session is `80d3006e-1c5b-4b64-be07-971a29244f5c.jsonl`. The `memory/` folder with `MEMORY.md` sits in the same directory.'}],stop_reason:'end_turn',usage:{input_tokens:2,cache_creation_input_tokens:9809,cache_read_input_tokens:59728,output_tokens:153,service_tier:'standard',cache_creation:{ephemeral_1h_input_tokens:9809,ephemeral_5m_input_tokens:0}}},requestId:'req_011CftLi92sACysvLkPmtR1V',requestedModel:'claude-sonnet-5-5',type:'assistant',uuid:A,timestamp:'2026-10-10T09:44:13.135Z',advisorModel:'claude-opus-5-5',effort:'medium',perTurnEffort:'medium'})}
+];
+R.forEach(function(r,i){r.i=i;});
+var byUuid={};R.forEach(function(r){if(r.uuid)byUuid[r.uuid]=r;});
+function children(r){return r.uuid?R.filter(function(x){return x.parent===r.uuid;}):[];}
+
+var $=function(id){return document.getElementById(id);};
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function hl(obj){
+  var t=esc(JSON.stringify(obj,null,2));
+  return t.replace(/("(?:\\.|[^"\\])*")(\s*:)?|\b(true|false|null)\b|-?\b\d+(?:\.\d+)?\b/g,function(m,str,colon,bool){
+    if(str){
+      if(colon)return '<span class="k">'+str+'</span>'+colon;
+      var raw=str.slice(1,-1);
+      if(byUuid[raw]||/^9ced3c84/.test(raw))return '<a data-u="'+raw+'">'+str+'</a>';
+      return '<span class="s">'+str+'</span>';
+    }
+    if(bool)return '<span class="b">'+m+'</span>';
+    return '<span class="n">'+m+'</span>';
+  });
+}
+
+var sel=0;
+var list=$('list');
+R.forEach(function(r){
+  var b=document.createElement('button');
+  b.className='rec';b.setAttribute('role','option');
+  var cls=r.tag==='USER'?'t-user':r.tag==='ATTACH'?'t-attach':r.tag==='CLAUDE'?'t-asst':'t-meta';
+  b.innerHTML='<span class="ln">'+(r.i+1)+'</span><span><b><span class="tag '+cls+'">'+r.tag+'</span>'+esc(r.title)+'</b><small>'+esc(r.sub)+'</small></span>';
+  b.onclick=function(){select(r.i,true);};
+  r.el=b;list.appendChild(b);
+});
+
+function select(i,noScroll){
+  sel=i;var r=R[i];
+  R.forEach(function(x){x.el.classList.toggle('sel',x.i===i);x.el.classList.remove('rel');});
+  var p=r.parent&&byUuid[r.parent],ch=children(r);
+  if(p)p.el.classList.add('rel');
+  ch.forEach(function(c){c.el.classList.add('rel');});
+  r.el.setAttribute('aria-selected','true');
+  $('explain').textContent=r.explain;
+  $('json').innerHTML=hl(r.json);
+  $('meta').textContent='line '+(i+1)+' of '+R.length+' · type: '+r.type;
+  $('prev').disabled=!p;$('next').disabled=!ch.length;
+  $('prev').title=p?'Go to line '+(p.i+1):(r.parent?'Parent is earlier in the session (not in this excerpt)':'No parent');
+  $('hint').textContent=r.uuid
+    ?'Amber outlines on the list show this record’s parent and child. '+(ch.length>1?'This record has several children — a branch.':'')
+    :'Metadata record: no uuid/parentUuid, so it sits outside the chain.';
+  document.querySelectorAll('.node').forEach(function(n){n.classList.toggle('sel',+n.dataset.i===i);});
+  if(!noScroll)r.el.scrollIntoView({block:'nearest'});
+}
+$('prev').onclick=function(){var p=byUuid[R[sel].parent];if(p)select(p.i);};
+$('next').onclick=function(){var c=children(R[sel]);if(c.length)select(c[0].i);};
+$('json').addEventListener('click',function(e){
+  var u=e.target.getAttribute&&e.target.getAttribute('data-u');
+  if(u&&byUuid[u])select(byUuid[u].i);
+  else if(u)$('hint').textContent='That UUID belongs to an earlier record that is not part of this excerpt.';
+});
+document.addEventListener('keydown',function(e){
+  if(e.target.closest&&e.target.closest('.theme'))return;
+  if(e.key==='ArrowDown'||e.key==='ArrowUp'){
+    if(document.activeElement===$('json'))return;
+    e.preventDefault();
+    select(Math.max(0,Math.min(R.length-1,sel+(e.key==='ArrowDown'?1:-1))));
+    R[sel].el.focus({preventScroll:true});
+  }
+});
+
+// chain diagram
+var chain=$('chain');
+var order=[null,R[0],R[1],R[2],R[3],R[10]];
+var first=document.createElement('div');first.className='node';first.style.cursor='default';first.innerHTML='earlier turns<small>9ced3c84…</small>';chain.appendChild(first);
+[R[0],R[1],R[2],R[3],R[10]].forEach(function(r){
+  var a=document.createElement('span');a.className='arrow';a.textContent='→';chain.appendChild(a);
+  var n=document.createElement('button');n.className='node';n.dataset.i=r.i;
+  n.innerHTML=esc(r.title)+'<small>'+r.uuid.slice(0,8)+'…</small>';
+  n.title='parentUuid = '+r.parent;
+  n.onclick=function(){select(r.i);location.hash='';document.getElementById('list').scrollIntoView({behavior:'smooth',block:'center'});};
+  chain.appendChild(n);
+});
+
+// token bar
+var seg=[['seg-read',59728,'59,728 read from cache'],['seg-write',9809,'9,809 newly cached'],['seg-fresh',2,'2 fresh']];
+var total=69539,bar=$('bar');
+seg.forEach(function(s){var d=document.createElement('div');d.className=s[0];d.style.flex=s[1];d.title=s[2];d.textContent=s[1]>5000?(s[1]/1000).toFixed(1)+'k':'';bar.appendChild(d);});
+$('pct').textContent='Of '+total.toLocaleString()+' input tokens, '+(59728/total*100).toFixed(1)+'% came from cache, '+(9809/total*100).toFixed(1)+'% were newly cached, and '+(2/total*100).toFixed(4)+'% were fresh.';
+
+// theme
+$('theme').onclick=function(){
+  var cur=document.documentElement.getAttribute('data-theme');
+  var dark=cur?cur==='dark':matchMedia('(prefers-color-scheme: dark)').matches;
+  document.documentElement.setAttribute('data-theme',dark?'light':'dark');
+};
+
+select(0,true);
+})();
+</script>
+</body>
+</html>
