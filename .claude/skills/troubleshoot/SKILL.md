@@ -36,4 +36,6 @@ Diagnose the local onboard setup and present the findings. **Do not fix anything
 - Never start containers, install packages, run migrations, or seed before the user approves.
 - If the script itself crashes or prints invalid JSON, show the error and say so; don't guess at results.
 - The `E2E` category checks that `npm run test:e2e` can run (Playwright installed, Chromium downloaded, specs/config present, no non-TEST_MODE server on :3000). The `db-wipe` entry is only a reminder that tests wipe the database.
+- Common cause of an E2E/runtime failure after pulling or editing `prisma/schema.prisma`: the generated Prisma client is stale (`Unknown argument ...` from Prisma). The `prisma-client` check catches this; the fix is `npx prisma generate` (non-destructive) and then restarting any running dev server. If the user reports such an error but the check is ✅, check migrations too.
+- A `cwd` warning means the script was run outside `onboard/`: `npm run ...` fails with `ENOENT ... package.json`. Run every npm/npx command from `onboard/` (`cd onboard`).
 - `TEST_MODE` warnings: a dev server running with `TEST_MODE=1` is fine for E2E tests but wrong for normal use, and the reverse breaks the tests.

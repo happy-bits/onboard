@@ -21,6 +21,8 @@ Give the user a guided, educational walkthrough of how to run and use the onboar
    npm run dev                 # 4. Eite running               ✅ already running
    ```
 
+   - Remind the user that every command must run from `onboard/` (not the repo root), otherwise npm fails with `ENOENT ... package.json`.
+   - After a `git pull` or any change to `prisma/schema.prisma`, run `npx prisma generate` (and `npx prisma migrate dev`) so the Prisma client matches the schema. Otherwise the app/tests fail with `Unknown argument ...`. If the report flags a stale Prisma client, add this as a step before `npm run dev` / `npm run test:e2e`.
    - Optionally add the E2E test setup (only if the report's `E2E` category shows it is needed): `npx playwright install chromium` (first time only), then `npm run test:e2e`. Mention that tests truncate and reseed the dev database, and that a manually started dev server must have `TEST_MODE=1` (or be stopped so Playwright starts its own).
    - Use `npm run seed superadmin+leader` instead of step 3 to also get a Leader.
 

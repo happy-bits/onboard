@@ -47,9 +47,29 @@ if (!existsSync(app)) {
   existsSync(path.join(app, "node_modules"))
     ? add("Project", "node-modules", "ok", "node_modules installed")
     : add("Project", "node-modules", "fail", "node_modules missing", "", "cd onboard && npm install");
-  existsSync(path.join(app, "node_modules/.prisma/client")) || existsSync(path.join(app, "node_modules/@prisma/client/index.js"))
-    ? add("Project", "prisma-client", "ok", "Prisma client package present")
-    : add("Project", "prisma-client", "warn", "Prisma client not found", "", "cd onboard && npx prisma generate");
+  const generatedSchema = path.join(app, "node_modules/.prisma/client/schema.prisma");
+  const sourceSchema = path.join(app, "prisma/schema.prisma");
+  if (!existsSync(generatedSchema) && !existsSync(path.join(app, "node_modules/@prisma/client/index.js"))) {
+    add("Project", "prisma-client", "warn", "Prisma client not found", "", "cd onboard && npx prisma generate");
+  } else if (existsSync(generatedSchema) && existsSync(sourceSchema)) {
+    // The generated client keeps a copy of the schema it was built from; compare ignoring whitespace.
+    const norm = (f) => readFileSync(f, "utf8").replace(/\s+/g, " ").trim();
+    norm(generatedSchema) === norm(sourceSchema)
+      ? add("Project", "prisma-client", "ok", "Prisma client matches prisma/schema.prisma")
+      : add("Project", "prisma-client", "fail", "Prisma client is stale (generated from an older schema)",
+          "Queries using new fields fail at runtime, e.g. \"Unknown argument `step4`\" in /api/progress and E2E tests",
+          "cd onboard && npx prisma generate (then restart any running dev server)");
+  } else {
+    add("Project", "prisma-client", "ok", "Prisma client package present");
+  }
+}
+
+// ---- Working directory ----
+// npm/npx/prisma/playwright commands must run from onboard/, not the repo root.
+const cwd = process.cwd();
+if (!existsSync(path.join(cwd, "package.json"))) {
+  add("Project", "cwd", "warn", `Current directory has no package.json (${cwd})`,
+    "npm run ... fails with ENOENT here; the app lives in onboard/", "cd onboard before running npm/npx commands");
 }
 
 // ---- Env ----
