@@ -36,6 +36,12 @@ export default function LeaderAdmin({
     router.refresh();
   }
 
+  async function removeAllLeaders() {
+    if (!confirm("Remove ALL leaders and their teams? This cannot be undone.")) return;
+    await fetch("/api/leaders", { method: "DELETE" });
+    router.refresh();
+  }
+
   return (
     <div>
       <h2 className="mb-3 text-lg font-semibold">Create leader</h2>
@@ -65,7 +71,17 @@ export default function LeaderAdmin({
       </form>
       {error && <p className="mb-4 text-sm text-red-600">{error}</p>}
 
-      <h2 className="mb-3 text-lg font-semibold">Leaders</h2>
+      <div className="mb-3 flex items-center justify-between">
+        <h2 className="text-lg font-semibold">Leaders</h2>
+        {leaders.length > 0 && (
+          <button
+            className="rounded bg-red-600 px-3 py-1 text-sm font-medium text-white hover:bg-red-700"
+            onClick={removeAllLeaders}
+          >
+            Remove all leaders
+          </button>
+        )}
+      </div>
       {leaders.length === 0 ? (
         <p className="text-gray-500">No leaders yet.</p>
       ) : (

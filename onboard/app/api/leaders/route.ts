@@ -24,3 +24,13 @@ export async function POST(req: Request) {
   });
   return NextResponse.json({ ok: true });
 }
+
+export async function DELETE() {
+  const user = await currentUser();
+  if (user?.role !== "SUPERADMIN") {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+  // Cascades to each leader's team, members, invitations, progress and sessions.
+  const { count } = await prisma.user.deleteMany({ where: { role: "LEADER" } });
+  return NextResponse.json({ ok: true, count });
+}
